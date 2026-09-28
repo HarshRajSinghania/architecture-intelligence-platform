@@ -1096,6 +1096,18 @@ def test_path_c_captured_at_after_window():
     assert resolution.limitation_codes == [LimitationCode.DEPLOYMENT_TEMPORAL_MISMATCH]
 
 
+def test_path_c_captured_at_without_offset_is_temporal_mismatch():
+    # Offset-less capturedAt parses to a naive datetime; comparing it with the
+    # offset-aware observation window must not raise TypeError.
+    result = _run_path_c(
+        [_observation_row()],
+        pods_by_uid={POD_UID: [_pod_row(captured_at="2026-09-19T12:00:00")]},
+    )
+    [resolution] = result.resolutions
+    assert resolution.status == DeploymentResolutionStatus.UNRESOLVED
+    assert resolution.limitation_codes == [LimitationCode.DEPLOYMENT_TEMPORAL_MISMATCH]
+
+
 def test_path_c_environment_absent():
     result = _run_path_c([_observation_row(environment=None)])
     [resolution] = result.resolutions
