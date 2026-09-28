@@ -60,7 +60,10 @@ class OpenAIProvider:
             )
         except openai.APIError as exc:
             raise LLMProviderError(f"Cypher generation failed: {exc}") from exc
-        return response.choices[0].message.parsed.cypher
+        parsed = response.choices[0].message.parsed
+        if parsed is None:  # e.g. a model refusal
+            raise LLMProviderError("Cypher generation failed: the model returned no parsed result")
+        return parsed.cypher
 
     def compose_answer(self, *, question: str, cypher: str, rows: list[dict]) -> str:
         user_message = (
@@ -76,4 +79,7 @@ class OpenAIProvider:
             )
         except openai.APIError as exc:
             raise LLMProviderError(f"Answer composition failed: {exc}") from exc
-        return response.choices[0].message.content
+        content = response.choices[0].message.content
+        if content is None:  # e.g. a model refusal
+            raise LLMProviderError("Answer composition failed: the model returned no content")
+        return content

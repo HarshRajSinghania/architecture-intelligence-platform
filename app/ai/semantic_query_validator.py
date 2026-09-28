@@ -78,6 +78,9 @@ def _match_bracket(code: str, open_pos: int, open_ch: str, close_ch: str) -> int
 
 def _parse_node(body: str, start: int, end: int) -> NodeToken:
     match = _NODE_HEAD_RE.match(body)
+    assert (
+        match is not None
+    )  # every group in the anchored pattern is optional, so it always matches
     var = match.group("var")
     labels = frozenset(_LABEL_FINDALL_RE.findall(match.group("labels") or ""))
     return NodeToken(var=var, labels=labels, start=start, end=end)
@@ -280,4 +283,8 @@ class SemanticQueryValidator:
         symbol_table = _build_symbol_table(tokens)
         for chain in _extract_chains(tokens, code):
             for idx in range(0, len(chain) - 2, 2):
-                _check_triple(chain[idx], chain[idx + 1], chain[idx + 2], symbol_table)
+                node_a, rel, node_b = chain[idx], chain[idx + 1], chain[idx + 2]
+                # _extract_chains only returns chains alternating NodeToken/RelToken/NodeToken...
+                assert isinstance(node_a, NodeToken) and isinstance(node_b, NodeToken)
+                assert isinstance(rel, RelToken)
+                _check_triple(node_a, rel, node_b, symbol_table)

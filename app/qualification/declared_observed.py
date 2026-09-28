@@ -20,7 +20,7 @@ from __future__ import annotations
 from collections.abc import Collection, Mapping
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+from typing import Any, LiteralString
 
 CONFIRMED = "CONFIRMED"
 OBSERVED_ONLY = "OBSERVED_ONLY"
@@ -187,8 +187,8 @@ def qualify_relation(
 
 
 def observed_evidence_condition(
-    evidence_var: str = "e", *, environment_optional: bool = False
-) -> str:
+    evidence_var: LiteralString = "e", *, environment_optional: bool = False
+) -> LiteralString:
     """Spec §13's positive OBSERVED predicate, as a WHERE-clause condition (not wrapped in
     EXISTS{}) - used both by `observed_evidence_exists` below and directly by O1's inline filter,
     which is the one caller that needs `environment_optional=True` (O1 is a raw,
@@ -205,12 +205,14 @@ def observed_evidence_condition(
     )
 
 
-def declared_evidence_condition(evidence_var: str = "e") -> str:
+def declared_evidence_condition(evidence_var: LiteralString = "e") -> LiteralString:
     """Spec §13's positive DECLARED predicate. No environment/window clause - matches §10.1."""
     return f"{evidence_var}.evidence_type = 'DECLARED'"
 
 
-def observed_evidence_exists(eid_var: str = "eid", evidence_var: str = "e") -> str:
+def observed_evidence_exists(
+    eid_var: LiteralString = "eid", evidence_var: LiteralString = "e"
+) -> LiteralString:
     """Spec §13. Always exact-environment-equality - O1's environment-optional inline clause is
     built directly from `observed_evidence_condition(environment_optional=True)` instead, since it
     isn't wrapped in EXISTS{}."""
@@ -221,7 +223,9 @@ def observed_evidence_exists(eid_var: str = "eid", evidence_var: str = "e") -> s
     )
 
 
-def declared_evidence_exists(eid_var: str = "eid2", evidence_var: str = "e2") -> str:
+def declared_evidence_exists(
+    eid_var: LiteralString = "eid2", evidence_var: LiteralString = "e2"
+) -> LiteralString:
     """Spec §13. Default variable names (`eid2`/`e2`) match today's code, distinct from
     `observed_evidence_exists`'s (`eid`/`e`) so both guards can appear in one WHERE clause without
     Cypher variable collision (`_status_query` in `app.analysis.runtime` composes exactly this)."""
@@ -232,7 +236,9 @@ def declared_evidence_exists(eid_var: str = "eid2", evidence_var: str = "e2") ->
     )
 
 
-def not_observed_evidence_exists(eid_var: str = "eid", evidence_var: str = "e") -> str:
+def not_observed_evidence_exists(
+    eid_var: LiteralString = "eid", evidence_var: LiteralString = "e"
+) -> LiteralString:
     """Spec §13's own literal example: "NOT (<authoritative observed-exists expression>)" rather
     than an independently authored `NOT EXISTS {...}` copy. Produces `NOT (EXISTS {...})`, not
     today's literal `NOT EXISTS {...}` text - semantically equivalent Cypher, but the exact text
@@ -240,6 +246,8 @@ def not_observed_evidence_exists(eid_var: str = "eid", evidence_var: str = "e") 
     return f"NOT ({observed_evidence_exists(eid_var, evidence_var)})"
 
 
-def not_declared_evidence_exists(eid_var: str = "eid2", evidence_var: str = "e2") -> str:
+def not_declared_evidence_exists(
+    eid_var: LiteralString = "eid2", evidence_var: LiteralString = "e2"
+) -> LiteralString:
     """See `not_observed_evidence_exists` - same construction, same verification caveat."""
     return f"NOT ({declared_evidence_exists(eid_var, evidence_var)})"

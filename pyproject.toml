@@ -38,17 +38,9 @@ extend-exclude = ["*.md"]
 extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
 
 [tool.pyright]
-# Enforced in CI (`quality` job). Coverage widens one package at a time: add a package here only
-# once it is clean, never by loosening the mode or suppressing broadly (see AGENTS.md).
-include = [
-    "app/api",
-    "app/canonical",
-    "app/architecture_intelligence",
-    "app/graph",
-    "app/ingestion",
-    "app/sources",
-    "app/telemetry",
-]
+# Enforced in CI (`quality` job) over all of `app/`; `tests/` is not type-checked yet. Never loosen
+# the mode, shrink `include` or suppress broadly (see AGENTS.md).
+include = ["app"]
 typeCheckingMode = "standard"
 pythonVersion = "3.13"
 venvPath = "."

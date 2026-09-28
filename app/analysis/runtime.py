@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import LiteralString
 
 import neo4j
 
@@ -30,9 +31,13 @@ DEFAULT_ENVIRONMENT = "production"
 # operation stub). An inner join through PROVIDES would therefore silently drop exactly the rows
 # O3 exists to surface (undeclared operations/services) - every query below uses OPTIONAL MATCH
 # and a coalesce() fallback chain for the target's identity instead.
-_CALLS_TARGET_ID_EXPR = "coalesce(provider.id, o.id)"
-_CALLS_TARGET_NAME_EXPR = "coalesce(provider.name, o.name, o.method + ' ' + o.path, o.id)"
-_CALLS_TARGET = f"{_CALLS_TARGET_ID_EXPR} AS target_id, {_CALLS_TARGET_NAME_EXPR} AS target_name"
+_CALLS_TARGET_ID_EXPR: LiteralString = "coalesce(provider.id, o.id)"
+_CALLS_TARGET_NAME_EXPR: LiteralString = (
+    "coalesce(provider.name, o.name, o.method + ' ' + o.path, o.id)"
+)
+_CALLS_TARGET: LiteralString = (
+    f"{_CALLS_TARGET_ID_EXPR} AS target_id, {_CALLS_TARGET_NAME_EXPR} AS target_name"
+)
 
 # I1.2 (spec §13): these Cypher fragments now originate from app.qualification.declared_observed,
 # the single shared semantic owner for declared/observed evidence matching, instead of being
@@ -66,7 +71,7 @@ class RelationObservation:
     observation_count: int
 
 
-_O1_QUERY = (
+_O1_QUERY: LiteralString = (
     "MATCH (a:Service)-[r:CALLS]->(o:Operation) "
     "OPTIONAL MATCH (o)<-[:PROVIDES]-(provider:Service) "
     # WITH is required here, not cosmetic: a WHERE clause directly after OPTIONAL MATCH is parsed
@@ -124,7 +129,7 @@ def observed_relations(
     return [RelationObservation(**record.data()) for record in records]
 
 
-def _status_query(declared_guard: str, observed_guard: str) -> str:
+def _status_query(declared_guard: LiteralString, observed_guard: LiteralString) -> LiteralString:
     return (
         "MATCH (a:Service)-[r:CALLS]->(o:Operation) "
         "OPTIONAL MATCH (o)<-[:PROVIDES]-(provider:Service) "
@@ -198,7 +203,7 @@ class DeclaredOnlyRelation:
     coverage: str
 
 
-_O4_QUERY = (
+_O4_QUERY: LiteralString = (
     "MATCH (a:Service)-[r:CALLS]->(o:Operation) "
     "OPTIONAL MATCH (o)<-[:PROVIDES]-(provider:Service) "
     # Same fix as _O1_QUERY/_status_query - see their comments.
@@ -294,13 +299,13 @@ class ServiceTelemetryCoverage:
     spans_observed: bool
 
 
-_ALL_SERVICES_QUERY = "MATCH (s:Service) RETURN s.id AS id, s.name AS name"
+_ALL_SERVICES_QUERY: LiteralString = "MATCH (s:Service) RETURN s.id AS id, s.name AS name"
 
-_HTTP_CALLER_OBSERVED_QUERY = (
+_HTTP_CALLER_OBSERVED_QUERY: LiteralString = (
     f"MATCH (s:Service {{id: $service_id}})-[r:CALLS]->(:Operation) WHERE {_OBSERVED_EXISTS} "
     "RETURN count(r) > 0 AS observed"
 )
-_HTTP_PROVIDER_OBSERVED_QUERY = (
+_HTTP_PROVIDER_OBSERVED_QUERY: LiteralString = (
     "MATCH (s:Service {id: $service_id})-[:PROVIDES]->(:Operation)<-[r:CALLS]-(:Service) "
     f"WHERE {_OBSERVED_EXISTS} RETURN count(r) > 0 AS observed"
 )
@@ -308,20 +313,20 @@ _HTTP_PROVIDER_OBSERVED_QUERY = (
 # relations - observed `PUBLISHES_TO -> Topic` counts like `SENDS -> Queue`, and observed
 # `RECEIVES_FROM -> Subscription` like `RECEIVES_FROM -> Queue`. Target labels stay explicit so no
 # other relation/label pairing silently becomes messaging coverage.
-_SENDS_OBSERVED_QUERY = (
+_SENDS_OBSERVED_QUERY: LiteralString = (
     "MATCH (s:Service {id: $service_id})-[r:SENDS|PUBLISHES_TO]->(t) "
     "WHERE ((type(r) = 'SENDS' AND t:Queue) OR (type(r) = 'PUBLISHES_TO' AND t:Topic)) "
     f"AND {_OBSERVED_EXISTS} "
     "RETURN count(r) > 0 AS observed"
 )
-_RECEIVES_OBSERVED_QUERY = (
+_RECEIVES_OBSERVED_QUERY: LiteralString = (
     "MATCH (s:Service {id: $service_id})-[r:RECEIVES_FROM]->(t) "
     f"WHERE (t:Queue OR t:Subscription) AND {_OBSERVED_EXISTS} "
     "RETURN count(r) > 0 AS observed"
 )
 
 
-def _observed(session: neo4j.Session, query: str, **params) -> bool:
+def _observed(session: neo4j.Session, query: LiteralString, **params) -> bool:
     record = session.run(query, **params).single()
     return bool(record["observed"]) if record else False
 
@@ -420,7 +425,7 @@ class ServiceRuntimeProfile:
     relations: list[RuntimeRelationStatus]
 
 
-_SERVICE_NAME_QUERY = "MATCH (s:Service {id: $id}) RETURN s.name AS name"
+_SERVICE_NAME_QUERY: LiteralString = "MATCH (s:Service {id: $id}) RETURN s.name AS name"
 
 
 def service_runtime_profile(

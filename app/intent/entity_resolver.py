@@ -1,12 +1,12 @@
 import re
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, LiteralString
 
 import neo4j
 
 _NORMALIZE_RE = re.compile(r"[\s_-]+")
 
-_CANDIDATES_QUERY = {
+_CANDIDATES_QUERY: dict[str, LiteralString] = {
     "Service": "MATCH (n:Service) RETURN n.id AS id, n.name AS name",
     "Queue": "MATCH (n:Queue) RETURN n.id AS id, n.name AS name",
 }

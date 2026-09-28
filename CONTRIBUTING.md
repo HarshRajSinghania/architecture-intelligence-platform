@@ -21,7 +21,7 @@ uv run pytest tests/unit               # fast, no external dependencies
 uv run pytest tests/integration        # Testcontainers-backed, needs Docker
 uv run ruff check .                    # lint
 uv run ruff format .                   # format
-uv run pyright                         # type check (packages listed in pyproject.toml)
+uv run pyright                         # type check (app/)
 ```
 
 These are exactly what `.github/workflows/ci.yml` runs on every push and pull request, plus a

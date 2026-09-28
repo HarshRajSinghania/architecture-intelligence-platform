@@ -32,7 +32,7 @@ jobs:
       - name: ruff format --check
         run: uv run ruff format --check .
 
-      # Static type checking; `[tool.pyright]` in pyproject.toml sets the covered packages and mode.
+      # Static type checking of app/; `[tool.pyright]` in pyproject.toml sets the scope and mode.
       - name: pyright
         run: uv run pyright
 

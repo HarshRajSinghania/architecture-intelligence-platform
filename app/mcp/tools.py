@@ -195,4 +195,5 @@ def _reject_malformed_observation_context(context: ObservationContextInput | Non
 
 def _close_input_schema(server: MCPServer, tool_name: str) -> None:
     tool = server._tool_manager.get_tool(tool_name)
+    assert tool is not None  # register_tools registers every TOOL_NAMES entry before calling this
     tool.parameters["additionalProperties"] = False

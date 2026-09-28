@@ -46,7 +46,13 @@ class ArchitectureQuestionService:
         self._semantic_validator.validate(cypher)
 
         with open_session(self._driver, database=self._database, read_only=True) as session:
-            rows = [record.data() for record in session.run(cypher)]
+            # neo4j's type hints declare Session.run's query as LiteralString to discourage
+            # dynamic Cypher; generated Cypher is dynamic by design, gated by validate_cypher and
+            # the semantic validator above, and runs in a read-only session.
+            rows = [
+                record.data()
+                for record in session.run(cypher)  # pyright: ignore[reportArgumentType]
+            ]
 
         answer = compose_answer(self._provider, question=question, cypher=cypher, rows=rows)
         return AnswerResult(question=question, cypher=cypher, rows=rows, answer=answer)

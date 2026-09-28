@@ -50,6 +50,14 @@ def test_generate_cypher_wraps_sdk_errors():
         provider.generate_cypher(question="x", schema_description="y")
 
 
+def test_generate_cypher_raises_when_model_returns_no_parsed_result():
+    provider = OpenAIProvider(api_key="test-key")
+    provider._client.chat.completions.parse = MagicMock(return_value=_completion_with(parsed=None))
+
+    with pytest.raises(LLMProviderError, match="Cypher generation failed"):
+        provider.generate_cypher(question="x", schema_description="y")
+
+
 def test_compose_answer_returns_message_content():
     provider = OpenAIProvider(api_key="test-key")
     provider._client.chat.completions.create = MagicMock(
@@ -69,6 +77,16 @@ def test_compose_answer_returns_message_content():
 def test_compose_answer_wraps_sdk_errors():
     provider = OpenAIProvider(api_key="test-key")
     provider._client.chat.completions.create = MagicMock(side_effect=_dummy_connection_error())
+
+    with pytest.raises(LLMProviderError, match="Answer composition failed"):
+        provider.compose_answer(question="x", cypher="MATCH (n) RETURN n", rows=[])
+
+
+def test_compose_answer_raises_when_model_returns_no_content():
+    provider = OpenAIProvider(api_key="test-key")
+    provider._client.chat.completions.create = MagicMock(
+        return_value=_completion_with(content=None)
+    )
 
     with pytest.raises(LLMProviderError, match="Answer composition failed"):
         provider.compose_answer(question="x", cypher="MATCH (n) RETURN n", rows=[])

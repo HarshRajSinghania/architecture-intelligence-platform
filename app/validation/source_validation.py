@@ -83,7 +83,9 @@ def _ref_resolves(ref: str, document: dict) -> bool:
     try:
         for part in ref.lstrip("#/").split("/"):
             token = part.replace("~1", "/").replace("~0", "~")
-            node = node[token]  # type: ignore[index]
+            # A JSON-pointer walk over an untyped document: a non-indexable node is a dangling
+            # $ref, reported by the TypeError catch below, which pyright can't see.
+            node = node[token]  # pyright: ignore[reportIndexIssue]
     except (KeyError, TypeError, IndexError):
         return False
     return True

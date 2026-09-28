@@ -6,7 +6,7 @@ uv run pytest tests/unit               # fast unit tests (no Neo4j needed)
 uv run pytest tests/integration        # Testcontainers-backed tests (needs Docker)
 uv run ruff check .                    # lint
 uv run ruff format .                   # format
-uv run pyright                         # type check (packages listed in pyproject.toml)
+uv run pyright                         # type check (app/)
 ```
 
 Copy `.env.example` to `.env` and fill in `NEO4J_PASSWORD` (and `OPENAI_API_KEY` if you want the

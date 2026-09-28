@@ -11,10 +11,8 @@ aren't yet guaranteed stable pre-1.0.
 
 ### Added
 
-- Static type checking: `uv run pyright` (standard mode) now runs in CI's `quality` job over
-  `app/api`, `app/canonical`, `app/architecture_intelligence`, `app/graph`, `app/ingestion`,
-  `app/sources` and `app/telemetry`, with the other packages to follow one at a time. Existing
-  type errors in those packages were fixed without behavior changes, except the one listed under
+- Static type checking: `uv run pyright` (standard mode) now runs in CI's `quality` job over all
+  of `app/`. Existing type errors were fixed without behavior changes, except the two listed under
   Changed.
 
 ### Changed
@@ -23,6 +21,10 @@ aren't yet guaranteed stable pre-1.0.
   `service_id` (and a rejected outcome with one). Every built-in resolver already complied; a custom
   `ServiceIdentityResolver` returning an inconsistent resolution now fails loudly instead of
   producing canonical ids such as `operation:None:...`.
+- The OpenAI provider now raises `LLMProviderError` when the model returns no parsed Cypher or no
+  answer content (for example on a refusal), instead of an `AttributeError` or a `None` answer that
+  failed when the query response was built. The HTTP outcome is unchanged (an error response on
+  `/api/query` and the UI query page).
 
 ## [0.5.1] - 2026-09-27
 
