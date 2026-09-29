@@ -1,6 +1,6 @@
 # AIP v0.6.0 I1 — Completion Record
 
-**Status:** COMPLETE once the I1.5 PR carrying this record merges. That merge commit cannot be written into this record before it exists; it is recorded in that PR and in the I2 entry context.
+**Status:** **COMPLETE.** Closed by PR #311, merge `7a949cd3046e91ddd6ea67036b6bf47c241ed037` (2026-09-28T21:44:54Z). The closure SHA was written into this record after that merge (the two-step closure pattern).
 
 I1 completion is a **contract** freeze. It does not claim that any v0.6 capability is implemented, qualified or released. I2 implements, I3 exposes, I4/I5 qualify and demonstrate, and I6 releases (parent §5).
 
@@ -14,7 +14,7 @@ This record covers the accepted I1 specification [`i1-locality-and-evidence-appl
 | I1.2 | Matrix §§10–16, [`i1-vectors/utc-day-window.json`](i1-vectors/utc-day-window.json), vector test | #308 | `b9f10250634a4a7e61579639f5a082d6935beb43` | 2026-09-28T19:57:11Z |
 | I1.3 | [`i1-scoped-evidence-v2-contract.md`](i1-scoped-evidence-v2-contract.md), [`i1-vectors/v2-evidence-id.json`](i1-vectors/v2-evidence-id.json) | #309 | `5b3b3b7cf9802d7603a089556ea621f06d50a4d3` | 2026-09-28T20:40:02Z |
 | I1.4 | [`i1-capture-acquisition-runbook.md`](i1-capture-acquisition-runbook.md) | #310 | `c8667d52371dee84c19c7e99310fa8c2abe0dd93` | 2026-09-28T21:00:19Z |
-| I1.5 | [`i1-conformance-dossier.md`](i1-conformance-dossier.md), [`i1-vectors/conformance-expected.json`](i1-vectors/conformance-expected.json), this record, I1 status line | the PR carrying this record | *recorded after merge* | — |
+| I1.5 | [`i1-conformance-dossier.md`](i1-conformance-dossier.md), [`i1-vectors/conformance-expected.json`](i1-vectors/conformance-expected.json), this record, I1 status line | #311 | `7a949cd3046e91ddd6ea67036b6bf47c241ed037` | 2026-09-28T21:44:54Z |
 
 The merge commits above were read from `gh pr view --json mergeCommit`, not typed from memory. Planning started at `2026-09-28T17:28:36Z`; the value is recorded in each slice PR's hidden metadata marker.
 
@@ -69,9 +69,9 @@ Every decision below was left open to I1 by the accepted spec (I1 §15; parent �
 
 | Check | Status | Result |
 |---|---|---|
-| `tests/unit/test_v060_i1_contract_vectors.py` (stdlib only, no `app/` import): window, timestamp-role, v2/v1 ID, merge-permutation, snapshot-fragment and pin vectors, dossier consistency and drift, and the rejected-envelope selectability guard | **RUN** | 120 passed, as part of the full unit suite in the I1.5 PR |
+| `tests/unit/test_v060_i1_contract_vectors.py` (stdlib only, no `app/` import): window, timestamp-role, v2/v1 ID, merge-permutation, snapshot-fragment and pin vectors, dossier consistency and drift, and the rejected-envelope selectability guard | **RUN** | 120 passed, as part of the full unit suite in PR #311 |
 | Mutation proofs: a corrupted v2 hash; a wrong L36 disposition; an ingestion code leaked into L05's answer | **RUN** | Each failed as expected and passed again once restored |
-| Full local gate on the I1.5 branch (`ruff format`, `ruff check`, `pyright`, `lint-imports`, unit, integration) | **RUN** | See the I1.5 PR description |
+| Full local gate on the I1.5 branch (`ruff format`, `ruff check`, `pyright`, `lint-imports`, unit, integration) | **RUN** | See PR #311's description |
 | I2 implementation tests against the dossier | `NOT_RUN` | I2 |
 | I2 capture rehearsal (runbook §9) | `NOT_RUN` | I2 |
 | Real two-Workload capture (runbook §§4–8) | `NOT_RUN` | I5 |
@@ -106,7 +106,7 @@ Every decision below was left open to I1 by the accepted spec (I1 §15; parent �
   - `merge_runtime_identity_observation` is order-dependent (v2 contract §3).
   - Size-evicted correlation-buffer spans are dropped silently (matrix B3).
   - Duplicate Resource keys take the last value (matrix §10.2).
-- **Dossier interpretations** (dossier §4), for review in the I1.5 PR:
+- **Dossier interpretations** (dossier §4), reviewed in PR #311 and accepted with its merge. No reviewer objected:
   - every no-eligible answer carries the coverage code;
   - a missing environment and a missing UID each emit their own code;
   - a read-time environment mismatch carries no `LOCALITY_*` code.
@@ -140,4 +140,4 @@ Every decision below was left open to I1 by the accepted spec (I1 §15; parent �
 
 I1 freezes a versioned, reviewable and partly executable locality contract for the minimum v0.6 slice. That slice is HTTP `CALLS` with an environment, a whole UTC-day window and cluster/namespace/Workload caller locality, taken from an actual CLIENT Pod attribution resolved against a time-compatible selected capture.
 
-No semantic blocker is open. I2 may begin once the PR carrying this record merges.
+No semantic blocker is open. I1 is closed at `7a949cd`, and I2 may begin.

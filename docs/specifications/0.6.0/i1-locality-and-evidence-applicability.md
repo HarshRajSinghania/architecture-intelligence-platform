@@ -1,6 +1,6 @@
 # AIP v0.6.0 I1 — Locality and Evidence Applicability Contract
 
-**Status:** Accepted I1 increment specification — normative semantic scope and completion contract. I1 deliverables are complete; see [`i1-completion-record.md`](i1-completion-record.md) (PRs #307–#310 and the I1.5 PR). I2 implementation is not claimed.  
+**Status:** Accepted I1 increment specification — normative semantic scope and completion contract. I1 deliverables are complete; see [`i1-completion-record.md`](i1-completion-record.md) (PRs #307–#311; closure `7a949cd`). I2 implementation is not claimed.  
 **Release:** `v0.6.0` — Locality-Aware Current State  
 **Increment:** I1  
 **Repository path:** `docs/specifications/0.6.0/i1-locality-and-evidence-applicability.md`  
