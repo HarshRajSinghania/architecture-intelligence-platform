@@ -6,6 +6,7 @@ from app.canonical.ids import (
     observed_evidence_id,
     operation_id,
     queue_id,
+    runtime_identity_observation_id,
     schema_id,
     service_id,
 )
@@ -125,4 +126,73 @@ def test_ids_are_deterministic_across_calls():
     assert service_id("order-service") == service_id("order-service")
     assert operation_id("product-service", "GET", "/products/{id}") == operation_id(
         "product-service", "GET", "/products/{id}"
+    )
+
+
+def test_observed_evidence_id_pins_full_golden_value():
+    bucket_start = datetime(2026, 8, 26, tzinfo=UTC)
+    # printf '%s' 'service:orders|CALLS|operation:pricing:GET:/prices' | sha256sum
+    assert (
+        observed_evidence_id(
+            "production",
+            bucket_start,
+            "service:orders",
+            "CALLS",
+            "operation:pricing:GET:/prices",
+        )
+        == "evidence:otel:production:2026-08-26:47a491ddd2fc"
+    )
+
+
+def test_runtime_identity_observation_id_pins_namespace_and_pod_values():
+    bucket_start = datetime(2026, 8, 26, tzinfo=UTC)
+
+    # printf '%s' 'orders||pod-123' | sha256sum
+    assert (
+        runtime_identity_observation_id(
+            environment="production",
+            bucket_start=bucket_start,
+            service_name="orders",
+            service_namespace=None,
+            k8s_pod_uid="pod-123",
+        )
+        == "runtime-identity:otel:production:2026-08-26:0b89a71d5b49"
+    )
+
+    # printf '%s' 'orders|commerce|pod-123' | sha256sum
+    assert (
+        runtime_identity_observation_id(
+            environment="production",
+            bucket_start=bucket_start,
+            service_name="orders",
+            service_namespace="commerce",
+            k8s_pod_uid="pod-123",
+        )
+        == "runtime-identity:otel:production:2026-08-26:88409f733833"
+    )
+
+    # printf '%s' 'orders||pod-456' | sha256sum
+    assert (
+        runtime_identity_observation_id(
+            environment="production",
+            bucket_start=bucket_start,
+            service_name="orders",
+            service_namespace=None,
+            k8s_pod_uid="pod-456",
+        )
+        == "runtime-identity:otel:production:2026-08-26:ba5066c11f30"
+    )
+
+
+def test_runtime_identity_observation_id_pins_environment_and_day():
+    # The identity seed is unchanged; environment/day are explicit ID components.
+    assert (
+        runtime_identity_observation_id(
+            environment="staging",
+            bucket_start=datetime(2026, 8, 27, tzinfo=UTC),
+            service_name="orders",
+            service_namespace=None,
+            k8s_pod_uid="pod-123",
+        )
+        == "runtime-identity:otel:staging:2026-08-27:0b89a71d5b49"
     )

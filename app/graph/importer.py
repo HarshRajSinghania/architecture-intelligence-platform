@@ -1,16 +1,29 @@
 from collections.abc import Mapping, Sequence
 from collections.abc import Set as AbstractSet
-from dataclasses import dataclass, replace
+from dataclasses import replace
 
 import neo4j
 
-from app.canonical.model import ArchitectureModel
-from app.canonical.pubsub import (
-    PUBSUB_DECLARATION_LABEL,
-    SUBSCRIPTION_DEAD_LETTER_CONFIGURATION_LABEL,
+from app.canonical.model import ArchitectureModel, relation_key
+from app.graph import claim_planning, writers
+from app.graph.labels import (
+    KNOWN_RELATION_TYPES,
+    NODE_LABELS,
+)
+from app.graph.queries import (
+    ANY_SCOPED_OBSERVED_CALL_QUERY,
+    DELETE_SOURCE_STATE_QUERY,
+    NODE_LABELS_QUERY,
+    OWNED_NODE_IDS_QUERY,
+    OWNED_RELATION_KEYS_QUERY,
+    READ_CURRENT_INVENTORY_QUERY,
+    READ_SOURCE_STATE_QUERY,
+    READ_SOURCE_STATES_FOR_SCOPE_QUERY,
+    WRITE_CURRENT_INVENTORY_QUERY,
+    WRITE_SOURCE_STATE_QUERY,
 )
 from app.graph.repository import open_session
-from app.graph.revision_fence import bump_revision
+from app.graph.revision_fence import bump_revision, lock_revision
 from app.graph.schema import ensure_schema
 from app.ingestion.orchestrator import (
     DiscoveryRunResult,
@@ -19,13 +32,18 @@ from app.ingestion.orchestrator import (
     run_kubernetes_discovery,
 )
 from app.sources.claim_reconciliation import (
-    SourceClaimReconciliationPlan,
     plan_source_claim_reconciliation,
 )
-from app.sources.encoding import length_delimited, sha256_hex
+from app.sources.import_stats import (
+    EmittedCounts,
+    ImportRunStats,
+    SourceClaimEffects,
+    SourceImportStats,
+    SourceRunResult,
+    TombstoneDecision,
+)
 from app.sources.inventory import InventoryStatus
 from app.sources.inventory import inventory_event_id as compute_inventory_event_id
-from app.sources.jcs import canonical_json_bytes
 from app.sources.migration_mappings import SharedIdentityMappingIndex
 from app.sources.model import (
     NOT_SUPPLIED,
@@ -33,6 +51,7 @@ from app.sources.model import (
     FilesystemSourceConfig,
     IngestionDiagnostic,
     IngestionResult,
+    KubernetesCaptureScope,
     KubernetesSourceConfig,
     NotSupplied,
     SourceInstanceId,
@@ -59,365 +78,12 @@ class StalePredecessorError(RuntimeError):
     not committed."""
 
 
-NODE_LABELS = {
-    "services": "Service",
-    "operations": "Operation",
-    "queues": "Queue",
-    "messages": "Message",
-    "schemas": "Schema",
-    "provenance": "Evidence",
-    # v0.5.0 I4 spec §6.2/§11: persisted from the same slice (2b) that bumps snapshot
-    # canonicalization to v3 with dedicated Topic/Subscription node queries.
-    "topics": "Topic",
-    "subscriptions": "Subscription",
-}
-
-# I2 Draft 0.2 §3 item 6 / §7: internal-only infrastructure labels, deliberately NOT in
-# `NODE_LABELS` above - that mapping is keyed by `ArchitectureModel` field name and assumes
-# `model_dump(exclude={"id"})` yields Neo4j-storable primitives, which is not true for an entity's
-# nested `ports` nor for contributions/claims whose `id` is a computed property rather than a field.
-# `_write_infrastructure_nodes` handles them explicitly, using the same MERGE template.
-INFRASTRUCTURE_ENTITY_LABEL = "InfrastructureEntity"
-INFRASTRUCTURE_CONTRIBUTION_LABEL = "InfrastructureContribution"
-INFRASTRUCTURE_CLAIM_LABEL = "InfrastructureClaim"
-# I2 Draft 0.2 §7.2: "Claim contributions use the same source ownership, evidence-mode retention,
-# deterministic evidence union... as entity contributions." A claim node is shared by every source
-# asserting the same (kind, subject, object) - §7.2's own identity rule - so its own `evidence_refs`
-# can never be written directly from any one source's model (a real bug found in PR review, twice:
-# a plain overwrite made the stored evidence depend on which source wrote last, and a reduce-based
-# union could accumulate refs forever - neither let a RETAINED source correctly REPLACE its own
-# evidence on reimport, since nothing ever ran for a claim whose ownership hadn't changed). Instead,
-# each source's own view of a claim is persisted as its own `InfrastructureClaimContribution` row -
-# id-scoped per (claim, source) exactly like `InfrastructureContribution`, so a reimport correctly
-# *overwrites* (never accumulates) that source's own evidence - and the claim's own `evidence_refs`
-# is a derived, recomputed-from-scratch union of whatever contribution rows currently exist,
-# computed by `_recompute_infrastructure_claim_evidence` after every source's own write+reconcile
-# step. This is the same "one shared fact, several sources' own evidence" shape `InfrastructureEntity`
-# /`InfrastructureContribution` already solve correctly; a claim needed its own contribution layer
-# because §7.2 (unlike §7.1) puts `evidence_refs` on the shared claim object itself, with no
-# adapter-facing per-source contribution type of its own.
-INFRASTRUCTURE_CLAIM_CONTRIBUTION_LABEL = "InfrastructureClaimContribution"
-
-# I1 spec §4/§7: this is the source-adapter seam's own frozen relation vocabulary, unchanged from
-# the PoC-era value in the now-deleted app.graph.reconciliation - relocated here since that module
-# is deleted (its node/relation-id set diffing is superseded by source-instance-scoped,
-# multi-owner-aware reconciliation below).
-KNOWN_RELATION_TYPES = {
-    "PROVIDES",
-    "CALLS",
-    "REQUEST_SCHEMA",
-    "RESPONSE_SCHEMA",
-    "SENDS",
-    "RECEIVES_FROM",
-    "CARRIES",
-    "CONFORMS_TO",
-    "DEAD_LETTERS_TO",
-    # v0.5.0 I4 spec §6.3 (RECEIVES_FROM and CARRIES are reused for Subscription/Topic endpoints).
-    "PUBLISHES_TO",
-    "SUBSCRIPTION_OF",
-}
-
-
-def relation_key(relation) -> str:
-    return f"{relation.type}:{relation.source_id}:{relation.target_id}"
-
-
-def _model_node_ids(model: ArchitectureModel, *, source_instance_id: str) -> set[str]:
-    return {
-        *(s.id for s in model.services),
-        *(o.id for o in model.operations),
-        *(q.id for q in model.queues),
-        *(m.id for m in model.messages),
-        *(sc.id for sc in model.schemas),
-        *(p.id for p in model.provenance),
-        # v0.5.0 I4: Topic/Subscription plus their internal source-owned carriers, through the same
-        # ownership/reconciliation path (§11: no parallel lifecycle engine).
-        *(t.id for t in model.topics),
-        *(s.id for s in model.subscriptions),
-        *(d.id for d in model.pubsub_declarations),
-        *(c.id for c in model.subscription_dead_letter_configurations),
-        # I2 Draft 0.2 §3 item 6: infrastructure facts go through the *same* ownership and
-        # reconciliation path as every other canonical fact - including them here is what makes
-        # `plan_source_claim_reconciliation`'s claim-key diff, `_EXPIRE_NODES_QUERY`'s
-        # last-owner-wins deletion, and `_EXPIRE_NODES_QUERY`'s shared-ownership retirement
-        # apply to them unchanged.
-        *(e.id for e in model.infrastructure_entities),
-        *(c.id for c in model.infrastructure_contributions),
-        *(c.id for c in model.infrastructure_claims),
-        # The per-source claim-contribution row (see _write_infrastructure_nodes) is its own owned
-        # node, keyed per (claim, THIS source), so it must participate in ownership reconciliation
-        # the same way `InfrastructureContribution` already does.
-        *(
-            _infrastructure_claim_contribution_id(claim.id, source_instance_id)
-            for claim in model.infrastructure_claims
-        ),
-    }
-
-
-def _model_relation_keys(model: ArchitectureModel) -> set[str]:
-    return {relation_key(r) for r in model.relations}
-
-
-# Ownership is now tracked per SOURCE INSTANCE, not per service-directory slug (ADR 0009): one
-# source may declare many services, and a service may be declared by more than one source. A full
-# reimport rewrites every `.owner_source_ids` value, so no data migration from the old `.sources`
-# property name is required (a fresh graph never has both).
-_MERGE_NODE_TEMPLATE = (
-    "MERGE (n:{label} {{id: $id}}) "
-    "SET n += $props "
-    "SET n.owner_source_ids = CASE WHEN $source_instance_id IN coalesce(n.owner_source_ids, []) "
-    "THEN n.owner_source_ids ELSE coalesce(n.owner_source_ids, []) + $source_instance_id END"
-)
-
-_MERGE_RELATION_TEMPLATE = (
-    "MATCH (a {{id: $source_id}}), (b {{id: $target_id}}) "
-    "MERGE (a)-[r:{relation_type}]->(b) "
-    "SET r.key = $key "
-    "SET r.owner_source_ids = CASE WHEN $source_instance_id IN coalesce(r.owner_source_ids, []) "
-    "THEN r.owner_source_ids ELSE coalesce(r.owner_source_ids, []) + $source_instance_id END "
-    "SET r.evidence_ids = reduce(acc = coalesce(r.evidence_ids, []), eid IN $evidence_ids | "
-    "CASE WHEN eid IN acc THEN acc ELSE acc + eid END)"
-)
-
-# Every claim this source owns, with its full committed owner set: a claim this source stops
-# emitting expires only if no other source will own it (I1 §6), so the reconciliation plan needs the
-# real owners, not only this source.
-_OWNED_NODE_IDS_QUERY = (
-    "MATCH (n) WHERE $source_instance_id IN coalesce(n.owner_source_ids, []) "
-    "RETURN n.id AS id, n.owner_source_ids AS owners"
-)
-_OWNED_RELATION_KEYS_QUERY = (
-    "MATCH ()-[r]->() WHERE $source_instance_id IN coalesce(r.owner_source_ids, []) "
-    "RETURN r.key AS key, r.owner_source_ids AS owners"
-)
-
-_STRIP_STALE_EVIDENCE_QUERY = (
-    "UNWIND $ids AS eid "
-    "MATCH ()-[r]->() WHERE eid IN coalesce(r.evidence_ids, []) "
-    "SET r.evidence_ids = [x IN r.evidence_ids WHERE x <> eid]"
-)
-_EXPIRE_NODES_QUERY = (
-    "UNWIND $ids AS nid "
-    "MATCH (n {id: nid}) "
-    "SET n.owner_source_ids = [x IN n.owner_source_ids WHERE x <> $source_instance_id] "
-    "WITH n WHERE size(n.owner_source_ids) = 0 "
-    "DETACH DELETE n"
-)
-# A stale relation key must not be deleted outright just because its declaring source stopped
-# declaring it - it may still carry OBSERVED evidence (the H4 telemetry pipeline) or DECLARED
-# evidence from another declaring source (shared-evidence case). This strips $source_instance_id
-# from r.owner_source_ids, recomputes r.evidence_ids by removing only ids that are (a) DECLARED and
-# (b) actually attributed to $source_instance_id via that Evidence node's own owner_source_ids -
-# never touching another source's DECLARED evidence or any OBSERVED evidence - and only deletes the
-# relation once evidence_ids is truly empty.
-_EXPIRE_RELATIONS_QUERY = (
-    "UNWIND $keys AS rkey "
-    "MATCH ()-[r {key: rkey}]->() "
-    "SET r.owner_source_ids = [x IN r.owner_source_ids WHERE x <> $source_instance_id] "
-    "WITH r, [eid IN r.evidence_ids WHERE NOT EXISTS { "
-    "MATCH (e:Evidence {id: eid}) "
-    "WHERE e.evidence_type = 'DECLARED' AND $source_instance_id IN coalesce(e.owner_source_ids, []) "
-    "} ] AS remaining_evidence_ids "
-    "SET r.evidence_ids = remaining_evidence_ids "
-    "WITH r WHERE size(r.evidence_ids) = 0 "
-    "DELETE r"
-)
-_READ_SOURCE_STATE_QUERY = (
-    "MATCH (s:SourceState {source_instance_id: $source_instance_id}) "
-    "RETURN s.semantic_input_digest AS semantic_input_digest, "
-    "s.scope_definition_digest AS scope_definition_digest"
-)
-_WRITE_SOURCE_STATE_QUERY = (
-    "MERGE (s:SourceState {source_instance_id: $source_instance_id}) "
-    "SET s.semantic_input_digest = $semantic_input_digest, "
-    "s.scope_definition_digest = $scope_definition_digest, "
-    "s.discovery_scope_id = $discovery_scope_id"
-)
-_READ_SOURCE_STATES_FOR_SCOPE_QUERY = (
-    "MATCH (s:SourceState {discovery_scope_id: $discovery_scope_id}) "
-    "RETURN s.source_instance_id AS source_instance_id, "
-    "s.scope_definition_digest AS scope_definition_digest"
-)
-_DELETE_SOURCE_STATE_QUERY = (
-    "MATCH (s:SourceState {source_instance_id: $source_instance_id}) DELETE s"
-)
-
-# I2 Draft 0.2 §3 prerequisite slice, items 3/4/5: one persisted "current committed inventory" node
-# per discovery scope - sibling to `SourceState` above, which tracks per-*source* replay state.
-# This tracks per-*scope* inventory-revision/capture/event-id/audit-chain state, feeding the
-# transactional predecessor comparison and real (non-self-referential) values into
-# `authorize_source_removal`/`validate_tombstone_against_committed_inventory`.
-#
-# This is a MERGE, not a plain MATCH, even though it is only ever used as a read: under Neo4j's
-# default read-committed isolation, a plain MATCH takes no lock, so two concurrent transactions for
-# the same scope could both read the same pre-image, both pass their own predecessor check, and
-# both proceed to write - a real TOCTOU race found in PR review. MERGE acquires an exclusive lock
-# on the matched-or-created node for the rest of the transaction, so a second concurrent
-# transaction for the same scope blocks here until the first commits or rolls back, and then
-# correctly observes the first transaction's real, committed result rather than a stale snapshot.
-# A freshly created node's fields are all null, which this module already treats identically to "no
-# prior committed inventory" below.
-_READ_CURRENT_INVENTORY_QUERY = (
-    "MERGE (i:CurrentInventory {discovery_scope_id: $discovery_scope_id}) "
-    "RETURN i.inventory_revision AS inventory_revision, "
-    "i.inventory_capture_id AS inventory_capture_id, "
-    "i.inventory_event_id AS inventory_event_id, "
-    "i.scope_definition_digest AS scope_definition_digest, "
-    "i.discovery_scope_id AS discovery_scope_id"
-)
-_WRITE_CURRENT_INVENTORY_QUERY = (
-    "MERGE (i:CurrentInventory {discovery_scope_id: $discovery_scope_id}) "
-    "SET i.inventory_revision = $inventory_revision, "
-    "i.inventory_capture_id = $inventory_capture_id, "
-    "i.inventory_event_id = $inventory_event_id, "
-    "i.scope_definition_digest = $scope_definition_digest"
-)
-
-
-@dataclass(frozen=True)
-class ClaimEffectSet:
-    """One category of a source's canonical reconciliation effects (I1 §10 "canonical planned/
-    committed effects"), by stable claim identity. Public canonical facts are listed by id or
-    relation key. Internal-only facts (Kubernetes infrastructure entities, contributions and claims,
-    Pub/Sub carriers, and Evidence) are only counted: I2 §9 forbids exposing them."""
-
-    public_node_ids: tuple[str, ...] = ()
-    relation_keys: tuple[str, ...] = ()
-    internal_count: int = 0
-
-    @property
-    def is_empty(self) -> bool:
-        return not (self.public_node_ids or self.relation_keys or self.internal_count)
-
-
-@dataclass(frozen=True)
-class SourceClaimEffects:
-    """What one source's reconciliation changed, from its claim-reconciliation plans and the
-    before/after property snapshots that also decide `graph_revision_advanced`. An unchanged replay
-    has empty effects, although the importer still executes idempotent MERGEs."""
-
-    added: ClaimEffectSet = ClaimEffectSet()
-    changed: ClaimEffectSet = ClaimEffectSet()
-    expired: ClaimEffectSet = ClaimEffectSet()
-    ownership_removed: ClaimEffectSet = ClaimEffectSet()
-
-    @property
-    def is_empty(self) -> bool:
-        return all(
-            category.is_empty
-            for category in (self.added, self.changed, self.expired, self.ownership_removed)
-        )
-
-
-@dataclass(frozen=True)
-class SourceImportStats:
-    source_instance_id: str
-    locator: str
-    result: IngestionResult
-    nodes_written: int
-    relations_written: int
-    nodes_expired: int
-    relations_expired: int
-    graph_revision_advanced: bool
-    # `nodes_written`/`relations_written` count MERGE operations, which an unchanged replay also
-    # executes; `effects` is the canonical effect set (None only where no reconciliation ran).
-    effects: SourceClaimEffects | None = None
-
-
-@dataclass(frozen=True)
-class EmittedCounts:
-    """What one source's adapter mapped (I1 §10 "emitted counts"), before any reconciliation."""
-
-    services: int
-    operations: int
-    schemas: int
-    messages: int
-    queues: int
-    topics: int
-    subscriptions: int
-    relations: int
-    infrastructure_entities: int
-    infrastructure_claims: int
-
-    @classmethod
-    def of(cls, model: ArchitectureModel) -> "EmittedCounts":
-        return cls(
-            services=len(model.services),
-            operations=len(model.operations),
-            schemas=len(model.schemas),
-            messages=len(model.messages),
-            queues=len(model.queues),
-            topics=len(model.topics),
-            subscriptions=len(model.subscriptions),
-            relations=len(model.relations),
-            infrastructure_entities=len(model.infrastructure_entities),
-            infrastructure_claims=len(model.infrastructure_claims),
-        )
-
-
-@dataclass(frozen=True)
-class SourceRunResult:
-    """I1 spec §10: "Each source receives exactly one result" - one discovered source's own result
-    and diagnostics for a discovery run, recorded whether or not the run committed (unlike
-    `SourceImportStats`, which only exists for sources actually reconciled into the graph). v0.5.0
-    I5 finding F2: a non-committing run previously dropped every per-source result."""
-
-    source_instance_id: str
-    locator: str
-    result: IngestionResult
-    diagnostics: tuple[IngestionDiagnostic, ...]
-    # I1 §10's "dialects, identities, emitted counts": the claiming adapter (None when no adapter
-    # claimed the source), the document's own declared dialect version, the adapter's semantic
-    # input digest, the Service ids the source emits, and what the adapter mapped - recorded
-    # whether or not the run commits.
-    source_kind: str = ""
-    adapter_identity: str | None = None
-    mapping_rule_version: str | None = None
-    dialect_version: str | None = None
-    semantic_input_digest: str | None = None
-    service_ids: tuple[str, ...] = ()
-    emitted: EmittedCounts | None = None
-
-
-@dataclass(frozen=True)
-class TombstoneDecision:
-    """I1 spec §10's report entry for one in-scope explicit tombstone evaluated by a committing run:
-    whether it was accepted against the committed inventory, and the rejection reason if not."""
-
-    target_source_instance_id: str
-    tombstone_revision: str
-    accepted: bool
-    reason: str | None
-
-
-@dataclass(frozen=True)
-class ImportRunStats:
-    inventory_status: InventoryStatus
-    committed: bool
-    per_source: dict[str, SourceImportStats]
-    removed_source_instance_ids: tuple[str, ...]
-    diagnostics: tuple[IngestionDiagnostic, ...]
-    # v0.5.0 I5 finding F2 (I1 spec §10 import report) - defaulted so existing constructors keep
-    # working. `source_results` holds every discovered source's own result on every return path,
-    # committing or not; `inventory_revision` is the committed revision this run wrote (None when
-    # the run did not commit).
-    source_results: tuple[SourceRunResult, ...] = ()
-    discovery_scope_id: str | None = None
-    scope_definition_digest: str | None = None
-    inventory_revision: str | None = None
-    tombstone_decisions: tuple[TombstoneDecision, ...] = ()
-    # The expirations each authorized removal committed, one per `removed_source_instance_ids`.
-    removal_stats: tuple[SourceImportStats, ...] = ()
-
-
 # The public canonical node labels (the `NODE_LABELS` entities, minus Evidence). Every other owned
 # node is internal-only, and appears in a `ClaimEffectSet` only as a count.
 _PUBLIC_NODE_LABELS = frozenset(label for label in NODE_LABELS.values() if label != "Evidence")
 _PUBLIC_MODEL_FIELDS = tuple(
     field for field, label in NODE_LABELS.items() if label in _PUBLIC_NODE_LABELS
 )
-
-_NODE_LABELS_QUERY = "UNWIND $ids AS nid MATCH (n {id: nid}) RETURN n.id AS id, labels(n) AS labels"
 
 
 def _public_node_ids(
@@ -429,354 +95,10 @@ def _public_node_ids(
     if node_ids:
         public.update(
             record["id"]
-            for record in tx.run(_NODE_LABELS_QUERY, ids=list(node_ids))
+            for record in tx.run(NODE_LABELS_QUERY, ids=list(node_ids))
             if _PUBLIC_NODE_LABELS.intersection(record["labels"])
         )
     return frozenset(public & node_ids)
-
-
-def _effect_set(
-    node_ids: AbstractSet[str], relation_keys: AbstractSet[str], public: AbstractSet[str]
-) -> ClaimEffectSet:
-    return ClaimEffectSet(
-        public_node_ids=tuple(sorted(node_ids & public)),
-        relation_keys=tuple(sorted(relation_keys)),
-        internal_count=len(node_ids - public),
-    )
-
-
-def _without_owners(props: dict | None) -> dict | None:
-    if props is None:
-        return None
-    return {key: value for key, value in props.items() if key != "owner_source_ids"}
-
-
-def _owners_after_run(
-    committed_owners: AbstractSet[str],
-    key: str,
-    *,
-    run_source_ids: AbstractSet[str],
-    run_emitters: Mapping[str, AbstractSet[str]],
-) -> set[str]:
-    """Who owns a claim once the whole run has committed: its committed owners outside this run,
-    plus the run's sources that still emit it. Independent of the order the run's sources are
-    reconciled in, so a claim two sources of one run both stop emitting expires for both."""
-    return {owner for owner in committed_owners if owner not in run_source_ids} | set(
-        run_emitters.get(key, ())
-    )
-
-
-def _dropped_claim_owners(
-    owned: Mapping[str, AbstractSet[str]],
-    *,
-    source_instance_id: str,
-    run_source_ids: AbstractSet[str],
-    run_emitters: Mapping[str, AbstractSet[str]],
-) -> dict[str, set[SourceInstanceId]]:
-    """`committed_claim_owners` for `plan_source_claim_reconciliation`: this source plus every owner
-    the claim will have after the run, so a dropped claim is `expired` only when nobody else will
-    own it, and `ownership_removed` otherwise. Owner ids are stored as plain strings, and
-    `SourceInstanceId` is a typing-only NewType, so wrapping them changes no value."""
-    return {
-        key: {
-            SourceInstanceId(owner)
-            for owner in {source_instance_id}
-            | _owners_after_run(
-                owners, key, run_source_ids=run_source_ids, run_emitters=run_emitters
-            )
-        }
-        for key, owners in owned.items()
-    }
-
-
-def _expire_dropped_claims(
-    tx: neo4j.ManagedTransaction,
-    *,
-    source_instance_id: str,
-    node_plan: SourceClaimReconciliationPlan,
-    relation_plan: SourceClaimReconciliationPlan,
-) -> None:
-    """Retire every claim this source dropped. Expired and ownership-removed claims share the same
-    queries: each removes this source as an owner and deletes only what is left without one, and the
-    relation query also strips this source's DECLARED evidence, which a shared relation must lose
-    too. The plan's split decides only what the report says, never a different mutation."""
-    dropped_relations = (
-        relation_plan.expired_claim_keys | relation_plan.ownership_removed_claim_keys
-    )
-    if dropped_relations:
-        tx.run(
-            _EXPIRE_RELATIONS_QUERY,
-            keys=sorted(dropped_relations),
-            source_instance_id=source_instance_id,
-        )
-    if node_plan.expired_claim_keys:
-        tx.run(_STRIP_STALE_EVIDENCE_QUERY, ids=sorted(node_plan.expired_claim_keys))
-    dropped_nodes = node_plan.expired_claim_keys | node_plan.ownership_removed_claim_keys
-    if dropped_nodes:
-        tx.run(
-            _EXPIRE_NODES_QUERY,
-            ids=sorted(dropped_nodes),
-            source_instance_id=source_instance_id,
-        )
-
-
-def _write_nodes(
-    tx: neo4j.ManagedTransaction, source_instance_id: str, model: ArchitectureModel
-) -> int:
-    count = 0
-    for field_name, label in NODE_LABELS.items():
-        query = _MERGE_NODE_TEMPLATE.format(label=label)
-        for entity in getattr(model, field_name):
-            # Cypher can't parametrize a label; `label` comes from NODE_LABELS or a module-level
-            # carrier label constant, never from input, so the formatted query is not injectable.
-            tx.run(
-                query,  # pyright: ignore[reportArgumentType]
-                id=entity.id,
-                props=entity.model_dump(exclude={"id"}),
-                source_instance_id=source_instance_id,
-            )
-            count += 1
-    count += _write_pubsub_carrier_nodes(tx, source_instance_id, model)
-    return count + _write_infrastructure_nodes(tx, source_instance_id, model)
-
-
-def _write_pubsub_carrier_nodes(
-    tx: neo4j.ManagedTransaction, source_instance_id: str, model: ArchitectureModel
-) -> int:
-    """v0.5.0 I4 spec §10/§11: the internal source-owned carriers, deliberately outside
-    `NODE_LABELS` (their `id` is a computed property, and they must stay out of the NL-query label
-    allowlist and snapshot canonicalization), written with the same MERGE template as
-    `_write_infrastructure_nodes`' contributions."""
-    count = 0
-    for label, carriers in (
-        (PUBSUB_DECLARATION_LABEL, model.pubsub_declarations),
-        (
-            SUBSCRIPTION_DEAD_LETTER_CONFIGURATION_LABEL,
-            model.subscription_dead_letter_configurations,
-        ),
-    ):
-        query = _MERGE_NODE_TEMPLATE.format(label=label)
-        for carrier in carriers:
-            # Cypher can't parametrize a label; `label` comes from NODE_LABELS or a module-level
-            # carrier label constant, never from input, so the formatted query is not injectable.
-            tx.run(
-                query,  # pyright: ignore[reportArgumentType]
-                id=carrier.id,
-                props=carrier.model_dump(),
-                source_instance_id=source_instance_id,
-            )
-            count += 1
-    return count
-
-
-def _infrastructure_entity_props(entity) -> dict:
-    """I2 Draft 0.2 §7.1 delegates "persistence encoding" to the implementation. Everything except
-    `ports` is already a Neo4j-storable primitive; `ports` is the Canonical Model's only nested
-    object, and Neo4j properties cannot hold nested maps - so each port is stored as one RFC 8785
-    canonical-JSON string, reusing `app.sources.jcs` rather than inventing a second canonicalization.
-    The list stays in the entity's own §7.1 sorted order, so the stored value is deterministic and
-    the before/after property snapshot that drives the revision fence stays meaningful.
-    """
-    props = entity.model_dump(exclude={"id", "ports"})
-    props["ports"] = [
-        canonical_json_bytes(port.model_dump()).decode("utf-8") for port in entity.ports
-    ]
-    return props
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
-
-
-def _infrastructure_claim_contribution_id(claim_id: str, source_instance_id: str) -> str:
-    """Not spec-named (§7.2 describes the per-source contribution *concept* in prose, not a schema
-    - the same discipline as every other id formula this PR's own layer invents). Length-delimited
-    like every other identity hash in this codebase; deliberately a different literal prefix from
-    `InfrastructureClaim.id`'s own `urn:aip:infra-claim:` so `_recompute_infrastructure_claim_evidence`
-    can distinguish "a claim id" from "a claim-contribution id" by a plain string prefix check,
-    without needing a Neo4j label lookup.
-    """
-    key = length_delimited(_utf8(claim_id), _utf8(source_instance_id))
-    return f"urn:aip:infra-claim-support:{sha256_hex(key)}"
-
-
-_INFRASTRUCTURE_CLAIM_ID_PREFIX = "urn:aip:infra-claim:"
-
-_READ_CLAIM_CONTRIBUTION_EVIDENCE_QUERY = (
-    f"MATCH (c:{INFRASTRUCTURE_CLAIM_CONTRIBUTION_LABEL} {{claim_id: $claim_id}}) "
-    "RETURN c.evidence_refs AS evidence_refs"
-)
-_SET_CLAIM_EVIDENCE_REFS_QUERY = (
-    f"MATCH (n:{INFRASTRUCTURE_CLAIM_LABEL} {{id: $claim_id}}) SET n.evidence_refs = $evidence_refs"
-)
-
-
-def _recompute_affected_infrastructure_claims(
-    tx: neo4j.ManagedTransaction,
-    node_plan,
-    *,
-    currently_emitted_claim_ids: frozenset[str] = frozenset(),
-) -> None:
-    """Recomputes every infrastructure claim a source's own reconciliation step could have
-    affected: every claim it currently emits (`currently_emitted_claim_ids` - empty for whole-source
-    removal, which emits nothing), plus every claim it just stopped emitting (found by filtering
-    `node_plan`'s expired/ownership-removed id set for the claim-id prefix, since that set mixes
-    every node kind together). Must run AFTER this source's own nodes are written/reconciled, so the
-    read-your-own-writes view each recompute sees already reflects them.
-    """
-    affected_claim_ids = currently_emitted_claim_ids | {
-        node_id
-        for node_id in node_plan.expired_claim_keys | node_plan.ownership_removed_claim_keys
-        if node_id.startswith(_INFRASTRUCTURE_CLAIM_ID_PREFIX)
-    }
-    for claim_id in sorted(affected_claim_ids):
-        _recompute_infrastructure_claim_evidence(tx, claim_id)
-
-
-def _recompute_infrastructure_claim_evidence(tx: neo4j.ManagedTransaction, claim_id: str) -> None:
-    """A claim's `evidence_refs` is never written directly from any one source's model - it is
-    recomputed, from scratch, as the sorted union of every *currently live*
-    `InfrastructureClaimContribution` row for this claim id. Correct regardless of why this claim
-    was touched: a brand-new claim, a retained claim whose owning source replaced its own evidence
-    (the specific bug this replaces two prior write-time-union attempts to fix), or a claim losing
-    one of several owners (a real co-ownership bug found in PR review) - all three reduce to "read
-    what's currently there and set the union," with no incremental accumulate/strip logic to get
-    subtly wrong. A no-op if the claim node was already deleted (its last contribution just expired):
-    `MATCH` finds no rows to `SET`.
-    """
-    refs: set[str] = set()
-    for record in tx.run(_READ_CLAIM_CONTRIBUTION_EVIDENCE_QUERY, claim_id=claim_id):
-        refs.update(record["evidence_refs"] or [])
-    tx.run(_SET_CLAIM_EVIDENCE_REFS_QUERY, claim_id=claim_id, evidence_refs=sorted(refs))
-
-
-def _write_infrastructure_nodes(
-    tx: neo4j.ManagedTransaction, source_instance_id: str, model: ArchitectureModel
-) -> int:
-    """I2 Draft 0.2 §3 item 6: infrastructure entities, contributions, and claims are written
-    through the same MERGE-with-`owner_source_ids` template as every other canonical node, so they
-    inherit the identical ownership, shared-ownership, reconciliation, and expiry semantics without
-    a second mechanism (§12: "no second reconciliation engine is permitted").
-
-    Contributions and claims are nodes rather than graph relationships on purpose: `WORKLOAD_EXISTS`
-    is a first-class *unary* claim, and §7.2 forbids inventing "a sentinel entity or self-edge to
-    force it through a binary-relation representation" - modelling all four claim kinds uniformly as
-    owned claim nodes honors that, and keeps these internal-only facts out of every existing
-    untyped relationship traversal (§9: they "MUST NOT leak through generic serialization, existing
-    dependency answers, or a graph tool").
-    """
-    count = 0
-    entity_query = _MERGE_NODE_TEMPLATE.format(label=INFRASTRUCTURE_ENTITY_LABEL)
-    for entity in model.infrastructure_entities:
-        tx.run(
-            entity_query,
-            id=entity.id,
-            props=_infrastructure_entity_props(entity),
-            source_instance_id=source_instance_id,
-        )
-        count += 1
-
-    contribution_query = _MERGE_NODE_TEMPLATE.format(label=INFRASTRUCTURE_CONTRIBUTION_LABEL)
-    for contribution in model.infrastructure_contributions:
-        tx.run(
-            contribution_query,
-            id=contribution.id,
-            props=contribution.model_dump(),
-            source_instance_id=source_instance_id,
-        )
-        count += 1
-
-    # I2 Draft 0.2 §7.2: "Evidence mode is retained per contribution... merging declarations and
-    # captures never turns all support into observation" - the same requirement §7.1 states for
-    # entity contributions, applied to claim contributions too. `InfrastructureClaim` itself (§7.2's
-    # frozen adapter-facing schema) carries no `evidence_mode` field - by design, since that's a
-    # per-CONTRIBUTION property, not a property of the shared claim - so it is looked up here from
-    # this SAME model's own entity contribution for the claim's subject, which does carry it. This
-    # holds because a claim and its subject's own contribution are always emitted together by the
-    # same adapter for the same source in the same model, and §4.1 guarantees one source has exactly
-    # one immutable evidence mode - so the subject's contribution is authoritative for this claim's
-    # contribution too. `None` only if the model is malformed (a claim whose subject has no
-    # contribution from this same source at all).
-    contribution_by_entity_id = {c.entity_id: c for c in model.infrastructure_contributions}
-
-    # The claim node itself carries every field EXCEPT evidence_refs, which is never written here -
-    # see `_recompute_infrastructure_claim_evidence`. Its own per-source CONTRIBUTION row (id-scoped
-    # per (claim, source), so a reimport correctly overwrites rather than accumulates) is what
-    # actually carries this source's own evidence_refs and evidence mode.
-    claim_query = _MERGE_NODE_TEMPLATE.format(label=INFRASTRUCTURE_CLAIM_LABEL)
-    claim_contribution_query = _MERGE_NODE_TEMPLATE.format(
-        label=INFRASTRUCTURE_CLAIM_CONTRIBUTION_LABEL
-    )
-    for claim in model.infrastructure_claims:
-        tx.run(
-            claim_query,
-            id=claim.id,
-            props=claim.model_dump(exclude={"evidence_refs"}),
-            source_instance_id=source_instance_id,
-        )
-        subject_contribution = contribution_by_entity_id.get(claim.subject_id)
-        tx.run(
-            claim_contribution_query,
-            id=_infrastructure_claim_contribution_id(claim.id, source_instance_id),
-            props={
-                "claim_id": claim.id,
-                "evidence_refs": claim.evidence_refs,
-                "mapping_rule_id": claim.mapping_rule_id,
-                "mapping_rule_version": claim.mapping_rule_version,
-                "evidence_mode": (
-                    subject_contribution.evidence_mode if subject_contribution else None
-                ),
-            },
-            source_instance_id=source_instance_id,
-        )
-        count += 2
-    return count
-
-
-_SNAPSHOT_NODE_PROPS_QUERY = (
-    "UNWIND $ids AS nid MATCH (n {id: nid}) RETURN n.id AS id, properties(n) AS props"
-)
-_SNAPSHOT_RELATION_PROPS_QUERY = (
-    "UNWIND $keys AS rkey MATCH ()-[r {key: rkey}]->() RETURN r.key AS key, properties(r) AS props"
-)
-
-
-def _snapshot_node_props(tx: neo4j.ManagedTransaction, node_ids: set[str]) -> dict[str, dict]:
-    if not node_ids:
-        return {}
-    return {
-        record["id"]: dict(record["props"])
-        for record in tx.run(_SNAPSHOT_NODE_PROPS_QUERY, ids=list(node_ids))
-    }
-
-
-def _snapshot_relation_props(
-    tx: neo4j.ManagedTransaction, relation_keys: set[str]
-) -> dict[str, dict]:
-    if not relation_keys:
-        return {}
-    return {
-        record["key"]: dict(record["props"])
-        for record in tx.run(_SNAPSHOT_RELATION_PROPS_QUERY, keys=list(relation_keys))
-    }
-
-
-def _write_relations(
-    tx: neo4j.ManagedTransaction, source_instance_id: str, model: ArchitectureModel
-) -> int:
-    for relation in model.relations:
-        query = _MERGE_RELATION_TEMPLATE.format(relation_type=relation.type)
-        # Cypher can't parametrize a relationship type; `_import_source_tx` rejects any type outside
-        # KNOWN_RELATION_TYPES before this runs, so the formatted query is not injectable.
-        tx.run(
-            query,  # pyright: ignore[reportArgumentType]
-            source_id=relation.source_id,
-            target_id=relation.target_id,
-            key=relation_key(relation),
-            source_instance_id=source_instance_id,
-            evidence_ids=relation.evidence_ids,
-        )
-    return len(model.relations)
 
 
 def import_source(
@@ -789,6 +111,7 @@ def import_source(
     semantic_input_digest: str,
     discovery_scope_id: str,
     scope_definition_digest: str,
+    capture_scope: KubernetesCaptureScope | None = None,
 ) -> SourceImportStats:
     """Transactionally MERGEs one source instance's facts and expires its stale ones, applying the
     I1 spec §5.4 replay decision against this source's own previously committed state. Public
@@ -804,6 +127,7 @@ def import_source(
         semantic_input_digest=semantic_input_digest,
         discovery_scope_id=discovery_scope_id,
         scope_definition_digest=scope_definition_digest,
+        capture_scope=capture_scope,
     )
 
 
@@ -824,6 +148,7 @@ def _import_source_tx(
     run_source_ids: AbstractSet[str] | None = None,
     run_node_emitters: Mapping[str, AbstractSet[str]] | None = None,
     run_relation_emitters: Mapping[str, AbstractSet[str]] | None = None,
+    capture_scope: KubernetesCaptureScope | None = None,
 ) -> SourceImportStats:
     """`run_source_ids`/`run_node_emitters`/`run_relation_emitters` describe the whole discovery run
     (every source reconciled in it, and which of them emits each node id and relation key), so a
@@ -845,9 +170,10 @@ def _import_source_tx(
         if relation.type not in KNOWN_RELATION_TYPES:
             raise ValueError(f"Unknown relation type: {relation.type}")
 
-    committed = tx.run(_READ_SOURCE_STATE_QUERY, source_instance_id=source_instance_id).single()
+    committed = tx.run(READ_SOURCE_STATE_QUERY, source_instance_id=source_instance_id).single()
     committed_semantic_input_digest = committed["semantic_input_digest"] if committed else None
     committed_scope_definition_digest = committed["scope_definition_digest"] if committed else None
+    committed_capture = writers.capture_properties(committed)
 
     replay_decision = classify_replay_case(
         load_or_reevaluation_successful=True,
@@ -859,17 +185,17 @@ def _import_source_tx(
 
     owned_nodes = {
         record["id"]: set(record["owners"] or ())
-        for record in tx.run(_OWNED_NODE_IDS_QUERY, source_instance_id=source_instance_id)
+        for record in tx.run(OWNED_NODE_IDS_QUERY, source_instance_id=source_instance_id)
     }
     owned_relations = {
         record["key"]: set(record["owners"] or ())
-        for record in tx.run(_OWNED_RELATION_KEYS_QUERY, source_instance_id=source_instance_id)
+        for record in tx.run(OWNED_RELATION_KEYS_QUERY, source_instance_id=source_instance_id)
     }
     existing_node_ids = set(owned_nodes)
     existing_relation_keys = set(owned_relations)
 
-    new_node_ids = _model_node_ids(model, source_instance_id=source_instance_id)
-    new_relation_keys = _model_relation_keys(model)
+    new_node_ids = claim_planning.model_node_ids(model, source_instance_id=source_instance_id)
+    new_relation_keys = claim_planning.model_relation_keys(model)
     if replay_decision.case is ReplayCase.SCOPE_CHANGED_PRESERVE_PENDING_TOMBSTONE:
         # I1 spec §5.4/§6: a scope change must not itself authorize expiring claims absent from the
         # new scope - only an explicit inventory transition/tombstone may. Treat everything this
@@ -883,7 +209,7 @@ def _import_source_tx(
         run_relation_emitters = {key: {source_instance_id} for key in new_relation_keys}
     node_plan = plan_source_claim_reconciliation(
         source_instance_id=SourceInstanceId(source_instance_id),
-        committed_claim_owners=_dropped_claim_owners(
+        committed_claim_owners=claim_planning.dropped_claim_owners(
             owned_nodes,
             source_instance_id=source_instance_id,
             run_source_ids=run_source_ids,
@@ -893,7 +219,7 @@ def _import_source_tx(
     )
     relation_plan = plan_source_claim_reconciliation(
         source_instance_id=SourceInstanceId(source_instance_id),
-        committed_claim_owners=_dropped_claim_owners(
+        committed_claim_owners=claim_planning.dropped_claim_owners(
             owned_relations,
             source_instance_id=source_instance_id,
             run_source_ids=run_source_ids,
@@ -914,20 +240,20 @@ def _import_source_tx(
     if committed_nodes_before is not None:
         nodes_before = {k: v for k, v in committed_nodes_before.items() if k in new_node_ids}
     else:
-        nodes_before = _snapshot_node_props(tx, new_node_ids)
+        nodes_before = writers.snapshot_node_props(tx, new_node_ids)
     if committed_relations_before is not None:
         relations_before = {
             k: v for k, v in committed_relations_before.items() if k in new_relation_keys
         }
     else:
-        relations_before = _snapshot_relation_props(tx, new_relation_keys)
+        relations_before = writers.snapshot_relation_props(tx, new_relation_keys)
 
     public_node_ids = _public_node_ids(tx, existing_node_ids | new_node_ids, model)
 
-    nodes_written = _write_nodes(tx, source_instance_id, model)
-    relations_written = _write_relations(tx, source_instance_id, model)
+    nodes_written = writers.write_nodes(tx, source_instance_id, model)
+    relations_written = writers.write_relations(tx, source_instance_id, model)
 
-    _expire_dropped_claims(
+    writers.expire_dropped_claims(
         tx, source_instance_id=source_instance_id, node_plan=node_plan, relation_plan=relation_plan
     )
 
@@ -935,22 +261,25 @@ def _import_source_tx(
     # evidence (the specific bug this mechanism replaces two prior write-time-union attempts to
     # fix), and a claim losing one of several owners (a real co-ownership bug found in PR review)
     # all reduce to the same derive-from-scratch recompute.
-    _recompute_affected_infrastructure_claims(
+    writers.recompute_affected_infrastructure_claims(
         tx,
         node_plan,
         currently_emitted_claim_ids=frozenset(claim.id for claim in model.infrastructure_claims),
     )
 
     tx.run(
-        _WRITE_SOURCE_STATE_QUERY,
+        WRITE_SOURCE_STATE_QUERY,
         source_instance_id=source_instance_id,
         semantic_input_digest=semantic_input_digest,
         scope_definition_digest=scope_definition_digest,
         discovery_scope_id=discovery_scope_id,
     )
+    new_capture = None
+    if capture_scope is not None:
+        new_capture = writers.write_capture_scope(tx, source_instance_id, capture_scope)
 
-    nodes_after = _snapshot_node_props(tx, new_node_ids)
-    relations_after = _snapshot_relation_props(tx, new_relation_keys)
+    nodes_after = writers.snapshot_node_props(tx, new_node_ids)
+    relations_after = writers.snapshot_relation_props(tx, new_relation_keys)
     content_changed = nodes_before != nodes_after or relations_before != relations_after
 
     # graph_revision_advance_possible=False (FAILED_LOAD_PRESERVE_PRIOR, or REPLAY_NO_OP whose
@@ -968,6 +297,17 @@ def _import_source_tx(
     graph_revision_advanced = replay_decision.graph_revision_advance_possible and not is_no_op
     if graph_revision_advanced:
         bump_revision(tx)
+    elif new_capture is not None and new_capture != committed_capture:
+        # v0.6.0 I2.2d (decision record D5 item 4): the capture's own properties feed the scoped
+        # snapshot key once v2 records exist, but they are not part of the semantic input digest, so
+        # a scope-, revision- or capturedAt-only change can be a replay no-op that would otherwise
+        # leave the fence where it was. Take the fence lock BEFORE looking for v2, so a concurrent
+        # unit writing the first v2 record cannot slip in unseen; with no v2 record nothing is
+        # visible to advance and v0.5 behaviour is unchanged.
+        lock_revision(tx)
+        if tx.run(ANY_SCOPED_OBSERVED_CALL_QUERY).single() is not None:
+            bump_revision(tx)
+            graph_revision_advanced = True
 
     # Canonical effects by identity. Added-vs-retained is decided from the pre-run snapshot, not
     # from `node_plan`: in `_import_all_sources_tx` every source's nodes are pre-merged (with their
@@ -977,13 +317,13 @@ def _import_source_tx(
     # bookkeeping another source's reconciliation may change (every source's property writes are
     # already pre-merged); and a retained relation that gains evidence this source emits, since a
     # relation's only other properties are its key and owners.
-    model_node_ids = _model_node_ids(model, source_instance_id=source_instance_id)
+    model_node_ids = claim_planning.model_node_ids(model, source_instance_id=source_instance_id)
     previously_owned_nodes = (existing_node_ids - model_node_ids) | {
         node_id
         for node_id in model_node_ids
         if source_instance_id in (nodes_before.get(node_id) or {}).get("owner_source_ids", [])
     }
-    model_relation_keys = _model_relation_keys(model)
+    model_relation_keys = claim_planning.model_relation_keys(model)
     previously_owned_relations = (existing_relation_keys - model_relation_keys) | {
         key
         for key in model_relation_keys
@@ -995,16 +335,17 @@ def _import_source_tx(
     retained_nodes = new_node_ids & previously_owned_nodes
     retained_relations = new_relation_keys & previously_owned_relations
     effects = SourceClaimEffects(
-        added=_effect_set(
+        added=claim_planning.effect_set(
             new_node_ids - previously_owned_nodes,
             new_relation_keys - previously_owned_relations,
             public_node_ids,
         ),
-        changed=_effect_set(
+        changed=claim_planning.effect_set(
             {
                 i
                 for i in retained_nodes
-                if _without_owners(nodes_before.get(i)) != _without_owners(nodes_after.get(i))
+                if claim_planning.without_owners(nodes_before.get(i))
+                != claim_planning.without_owners(nodes_after.get(i))
             },
             {
                 k
@@ -1014,10 +355,10 @@ def _import_source_tx(
             },
             public_node_ids,
         ),
-        expired=_effect_set(
+        expired=claim_planning.effect_set(
             node_plan.expired_claim_keys, relation_plan.expired_claim_keys, public_node_ids
         ),
-        ownership_removed=_effect_set(
+        ownership_removed=claim_planning.effect_set(
             node_plan.ownership_removed_claim_keys,
             relation_plan.ownership_removed_claim_keys,
             public_node_ids,
@@ -1047,17 +388,17 @@ def _remove_source_tx(
     owned expires for each of them, whichever is removed first."""
     owned_nodes = {
         record["id"]: set(record["owners"] or ())
-        for record in tx.run(_OWNED_NODE_IDS_QUERY, source_instance_id=source_instance_id)
+        for record in tx.run(OWNED_NODE_IDS_QUERY, source_instance_id=source_instance_id)
     }
     owned_relations = {
         record["key"]: set(record["owners"] or ())
-        for record in tx.run(_OWNED_RELATION_KEYS_QUERY, source_instance_id=source_instance_id)
+        for record in tx.run(OWNED_RELATION_KEYS_QUERY, source_instance_id=source_instance_id)
     }
     existing_node_ids = set(owned_nodes)
     removed = {source_instance_id, *removed_source_ids}
     node_plan = plan_source_claim_reconciliation(
         source_instance_id=SourceInstanceId(source_instance_id),
-        committed_claim_owners=_dropped_claim_owners(
+        committed_claim_owners=claim_planning.dropped_claim_owners(
             owned_nodes,
             source_instance_id=source_instance_id,
             run_source_ids=removed,
@@ -1067,7 +408,7 @@ def _remove_source_tx(
     )
     relation_plan = plan_source_claim_reconciliation(
         source_instance_id=SourceInstanceId(source_instance_id),
-        committed_claim_owners=_dropped_claim_owners(
+        committed_claim_owners=claim_planning.dropped_claim_owners(
             owned_relations,
             source_instance_id=source_instance_id,
             run_source_ids=removed,
@@ -1078,13 +419,13 @@ def _remove_source_tx(
     # Classified before anything expires: an expired node may be deleted.
     public_node_ids = _public_node_ids(tx, existing_node_ids, ArchitectureModel())
 
-    _expire_dropped_claims(
+    writers.expire_dropped_claims(
         tx, source_instance_id=source_instance_id, node_plan=node_plan, relation_plan=relation_plan
     )
     # This source dropped every claim it owned (emits nothing) - see the identical mechanism in
     # `_import_source_tx`.
-    _recompute_affected_infrastructure_claims(tx, node_plan)
-    tx.run(_DELETE_SOURCE_STATE_QUERY, source_instance_id=source_instance_id)
+    writers.recompute_affected_infrastructure_claims(tx, node_plan)
+    tx.run(DELETE_SOURCE_STATE_QUERY, source_instance_id=source_instance_id)
     bump_revision(tx)
 
     return SourceImportStats(
@@ -1097,10 +438,10 @@ def _remove_source_tx(
         relations_expired=len(relation_plan.expired_claim_keys),
         graph_revision_advanced=True,
         effects=SourceClaimEffects(
-            expired=_effect_set(
+            expired=claim_planning.effect_set(
                 node_plan.expired_claim_keys, relation_plan.expired_claim_keys, public_node_ids
             ),
-            ownership_removed=_effect_set(
+            ownership_removed=claim_planning.effect_set(
                 node_plan.ownership_removed_claim_keys,
                 relation_plan.ownership_removed_claim_keys,
                 public_node_ids,
@@ -1151,7 +492,7 @@ def _import_all_sources_tx(
     # PR review: a tombstone submitted on a brand-new scope's very first run crashed instead of
     # being classified `NO_COMMITTED_INVENTORY`).
     persisted_inventory = tx.run(
-        _READ_CURRENT_INVENTORY_QUERY, discovery_scope_id=run_result.discovery_scope_id
+        READ_CURRENT_INVENTORY_QUERY, discovery_scope_id=run_result.discovery_scope_id
     ).single()
     assert persisted_inventory is not None  # the MERGE always yields exactly one row
     has_committed_inventory = persisted_inventory["inventory_revision"] is not None
@@ -1218,12 +559,12 @@ def _import_all_sources_tx(
     all_node_ids: set[str] = set()
     all_relation_keys: set[str] = set()
     for source_instance_id, source_outcome in run_result.source_outcomes.items():
-        all_node_ids |= _model_node_ids(
+        all_node_ids |= claim_planning.model_node_ids(
             source_outcome.outcome.model, source_instance_id=source_instance_id
         )
-        all_relation_keys |= _model_relation_keys(source_outcome.outcome.model)
-    committed_nodes_before = _snapshot_node_props(tx, all_node_ids)
-    committed_relations_before = _snapshot_relation_props(tx, all_relation_keys)
+        all_relation_keys |= claim_planning.model_relation_keys(source_outcome.outcome.model)
+    committed_nodes_before = writers.snapshot_node_props(tx, all_node_ids)
+    committed_relations_before = writers.snapshot_relation_props(tx, all_relation_keys)
 
     # Pre-merge every source's nodes first so cross-source relation targets always resolve
     # regardless of processing order - unchanged in spirit from the PoC-era pre-merge pass, now
@@ -1231,7 +572,7 @@ def _import_all_sources_tx(
     # itself: MERGE here is idempotent, and the real "did anything semantically change" decision
     # (and the resulting conditional bump) happens once, per source, in `_import_source_tx` below.
     for source_instance_id, source_outcome in run_result.source_outcomes.items():
-        _write_nodes(tx, source_instance_id, source_outcome.outcome.model)
+        writers.write_nodes(tx, source_instance_id, source_outcome.outcome.model)
 
     # Which absent sources this COMPLETE run removes is decided before any source is reconciled:
     # they take part in the run too (they will own nothing after it), so a claim a present source
@@ -1241,7 +582,7 @@ def _import_all_sources_tx(
     if run_result.inventory_status is InventoryStatus.COMPLETE:
         known_states = list(
             tx.run(
-                _READ_SOURCE_STATES_FOR_SCOPE_QUERY,
+                READ_SOURCE_STATES_FOR_SCOPE_QUERY,
                 discovery_scope_id=run_result.discovery_scope_id,
             )
         )
@@ -1269,9 +610,9 @@ def _import_all_sources_tx(
     run_relation_emitters: dict[str, set[str]] = {}
     for source_instance_id, source_outcome in run_result.source_outcomes.items():
         model = source_outcome.outcome.model
-        for node_id in _model_node_ids(model, source_instance_id=source_instance_id):
+        for node_id in claim_planning.model_node_ids(model, source_instance_id=source_instance_id):
             run_node_emitters.setdefault(node_id, set()).add(source_instance_id)
-        for key in _model_relation_keys(model):
+        for key in claim_planning.model_relation_keys(model):
             run_relation_emitters.setdefault(key, set()).add(source_instance_id)
 
     per_source: dict[str, SourceImportStats] = {}
@@ -1290,6 +631,9 @@ def _import_all_sources_tx(
             run_source_ids=frozenset(run_result.source_outcomes) | set(removed_source_instance_ids),
             run_node_emitters=run_node_emitters,
             run_relation_emitters=run_relation_emitters,
+            capture_scope=(
+                source_outcome.descriptor.capture_scope if source_outcome.descriptor else None
+            ),
         )
 
     # Decided before any is removed, so a claim several removed sources shared expires for each.
@@ -1308,7 +652,7 @@ def _import_all_sources_tx(
         inventory_capture_id=run_result.inventory_snapshot.inventory_capture_id,
     )
     tx.run(
-        _WRITE_CURRENT_INVENTORY_QUERY,
+        WRITE_CURRENT_INVENTORY_QUERY,
         discovery_scope_id=run_result.discovery_scope_id,
         inventory_revision=run_result.inventory_snapshot.inventory_revision,
         inventory_capture_id=run_result.inventory_snapshot.inventory_capture_id,

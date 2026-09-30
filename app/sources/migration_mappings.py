@@ -25,9 +25,9 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft202012Validator
 
-from app.sources.encoding import sha256_hex, unicode_nfc
+from app.common.encoding import sha256_hex, unicode_nfc
 from app.sources.identity import normalize_relative_posix_path
-from app.sources.model import DiagnosticCode, IngestionDiagnostic
+from app.sources.model import DiagnosticCode, IngestionDiagnostic, SubscriptionMapping
 from app.sources.pointers import decode_pointer_tokens, is_well_formed_pointer
 
 _MAPPING_ENTRY_SCHEMA = {
@@ -122,15 +122,6 @@ class IdentityMappingEntry:
     # explicit Subscription name (normalized to NFC without trimming/case folding).
     bound_topic_id: str | None = None
     subscription_name: str | None = None
-
-
-@dataclass(frozen=True)
-class SubscriptionMapping:
-    """The resolved payload of one `subscriptionMappings` entry (I4 spec §7.3)."""
-
-    topic_id: str
-    subscription_name: str
-    subscription_id: str
 
 
 @dataclass(frozen=True)

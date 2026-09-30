@@ -7,6 +7,7 @@
 | User input (NL question) | Free text | Never executed directly — routed to a fixed deterministic analysis, or turned into Cypher that must pass the validator below |
 | **LLM output** | Generated Cypher, generated prose | **Always treated as untrusted input** — see below |
 | Cypher validation | Generated Cypher -> validated Cypher | `app/ai/cypher_validator.py` — allowlisted read-only constructs only, known labels/relation types only, bounded traversal depth, capped result rows (see [`semantic-validation.md`](semantic-validation.md)) |
+| Graph reachability | Validated Cypher -> nodes it may read | `app/ai/graph_reachability.py` — fail-closed: every node pattern must be bound to an approved public label (syntax rule), and the `EXPLAIN` plan of the final query may only read approved labels; unlabeled scans and label expressions are refused, so internal nodes are unreachable |
 | Neo4j read path | Validated Cypher -> graph rows | Executed against a read-only session; the LLM layer never receives write credentials |
 | OTLP input | `POST /v1/traces` protobuf body | Decoded, then only allowlisted attributes are ever read (see [`opentelemetry.md`](opentelemetry.md)) — a malformed payload is rejected before any Neo4j access |
 | Bounded HTTP correlation buffer | In-memory span metadata awaiting a cross-batch match | See below — its own dedicated trust boundary |

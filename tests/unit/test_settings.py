@@ -201,7 +201,15 @@ def test_load_secrets_reads_environment(monkeypatch):
 
     assert secrets.neo4j_user == "custom-user"
     assert secrets.neo4j_password == "secret"
-    assert secrets.openai_api_key == "sk-test"
+    assert secrets.openai_api_key is not None
+    assert secrets.openai_api_key.get_secret_value() == "sk-test"
+
+
+def test_openai_api_key_is_hidden_from_the_settings_repr(monkeypatch):
+    monkeypatch.setenv("NEO4J_PASSWORD", "secret")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    assert "sk-test" not in repr(load_secrets())
 
 
 def test_load_secrets_defaults_neo4j_user(monkeypatch):

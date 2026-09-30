@@ -17,7 +17,7 @@ LLM-generated-Cypher path (`app/ai/question_service.py`'s `ArchitectureQuestionS
 ## The generated-Cypher path
 
 ```
-question + fixed graph schema -> CypherGenerator -> CypherValidator
+question + fixed graph schema -> CypherGenerator -> CypherValidator -> GraphReachabilityGate
    -> ReadOnlyGraphExecutor -> rows + provenance -> AnswerComposer
 ```
 
@@ -39,6 +39,22 @@ question + fixed graph schema -> CypherGenerator -> CypherValidator
   - rejects unbounded variable-length traversals and clamps any bounded one to a configured
     `max_depth` (default 5),
   - clamps or appends a `LIMIT` to a configured `max_result_rows` (default 100).
+- **`GraphReachabilityGate`** (`app/ai/graph_reachability.py`) is a second, fail-closed gate on which
+  nodes a query can reach at all. `validate_cypher` only checks labels that are written out, so an
+  unlabeled `MATCH (n)`, a label expression (`(n:Service|X)`) or a backtick label would otherwise
+  read internal nodes. The gate runs two independent checks, and a query must pass both:
+  - **Syntactic:** every node pattern must carry only approved public labels (the labels of
+    `app/graph/importer.py::NODE_LABELS`), reuse a variable bound earlier in the query, or be an
+    endpoint of a relationship with explicit known types. Label expressions, dynamic labels, backtick
+    labels and any `labels()` call are rejected.
+  - **Plan:** the service runs `EXPLAIN` on the final query and rejects any plan whose leaf operators
+    are not a label scan or index seek on an approved label, a relationship-type scan on known types,
+    or `Argument` (so `AllNodesScan`, id/elementId seeks and all-relationship scans are refused).
+    This is written against the pinned Neo4j image.
+
+  `Evidence` is an approved label, because the generator prompt directs evidence lookups to
+  `MATCH (e:Evidence)`. That means Kubernetes-sourced evidence, which the public evidence API hides,
+  is still reachable through this path; the gate does not change that.
 - **`ReadOnlyGraphExecutor`** runs the validated query against a read-only Neo4j session — the LLM
   layer never receives Neo4j credentials directly, and never gets a code path that could mutate the
   graph even if the validator had a gap.

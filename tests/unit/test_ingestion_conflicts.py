@@ -1,5 +1,5 @@
 from app.canonical.model import Message, Schema
-from app.ingestion._shared import upsert_message_or_conflict, upsert_schema_or_conflict
+from app.ingestion.conflicts import upsert_message_or_conflict, upsert_schema_or_conflict
 from app.sources.model import DiagnosticCode
 
 

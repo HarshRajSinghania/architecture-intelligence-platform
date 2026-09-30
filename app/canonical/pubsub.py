@@ -20,17 +20,13 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from app.sources.encoding import length_delimited, sha256_hex
+from app.common.encoding import length_delimited, sha256_hex, utf8
 
 PUBSUB_DECLARATION_LABEL = "PubSubDeclaration"
 SUBSCRIPTION_DEAD_LETTER_CONFIGURATION_LABEL = "SubscriptionDeadLetterConfiguration"
 
 PubSubEntityKind = Literal["TOPIC", "SUBSCRIPTION"]
 IdentityMethod = Literal["CONFIGURED", "DERIVED"]
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
 
 
 class PubSubDeclaration(BaseModel):
@@ -61,7 +57,7 @@ class PubSubDeclaration(BaseModel):
     @property
     def id(self) -> str:
         key = length_delimited(
-            _utf8(self.entity_id), _utf8(self.source_instance_id), _utf8(self.source_pointer)
+            utf8(self.entity_id), utf8(self.source_instance_id), utf8(self.source_pointer)
         )
         return f"urn:aip:pubsub-declaration:{sha256_hex(key)}"
 
@@ -79,5 +75,5 @@ class SubscriptionDeadLetterConfiguration(BaseModel):
 
     @property
     def id(self) -> str:
-        key = length_delimited(_utf8(self.subscription_id), _utf8(self.source_instance_id))
+        key = length_delimited(utf8(self.subscription_id), utf8(self.source_instance_id))
         return f"urn:aip:subscription-dlq:{sha256_hex(key)}"

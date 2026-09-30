@@ -18,29 +18,18 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
-from app.canonical.infrastructure import (
-    InfrastructureClaim,
-    InfrastructureContribution,
-    InfrastructureEntity,
-)
+from app.canonical.merge import merge_models
 from app.canonical.model import (
     ArchitectureModel,
-    Message,
-    Operation,
-    Queue,
-    Schema,
-    Service,
-    Subscription,
-    Topic,
+    relation_key,
 )
-from app.canonical.pubsub import PubSubDeclaration, SubscriptionDeadLetterConfiguration
+from app.common.jcs import sort_entries_by_canonical_bytes
 from app.ingestion.asyncapi_adapter import AsyncApiSourceAdapter
 from app.ingestion.filesystem_discoverer import FilesystemSourceDiscoverer
 from app.ingestion.kubernetes_adapter import KubernetesSourceAdapter
 from app.ingestion.kubernetes_discoverer import KubernetesSourceDiscoverer
 from app.ingestion.manifest_adapter import ManifestSourceAdapter
 from app.ingestion.openapi_adapter import OpenApiSourceAdapter
-from app.provenance.model import Provenance
 from app.sources.claim_conflicts import (
     detect_infrastructure_entity_content_conflicts,
     detect_shared_claim_content_conflicts,
@@ -54,7 +43,6 @@ from app.sources.inventory import (
     inventory_capture_id,
     inventory_revision,
 )
-from app.sources.jcs import sort_entries_by_canonical_bytes
 from app.sources.manifest_bindings import (
     BindingIndex,
     build_binding_index,
@@ -75,10 +63,18 @@ from app.sources.model import (
     IngestionDiagnostic,
     IngestionResult,
     KubernetesSourceConfig,
+    LoadedSource,
     NotSupplied,
     SourceDescriptor,
 )
-from app.sources.registry import AdapterOutcome, SourceAdapterRegistry, SourceDiscoverer
+from app.sources.registry import (
+    AdapterOutcome,
+    DiscoveryOutcome,
+    ServiceIdentityResolver,
+    SharedIdentityResolver,
+    SourceAdapterRegistry,
+    SourceDiscoverer,
+)
 from app.sources.service_identity import (
     PointerBinding,
     ServiceIdentityPath,
@@ -88,7 +84,6 @@ from app.sources.tombstones import Tombstone
 from app.validation.canonical_validation import (
     CanonicalValidationIssue,
     canonical_validation_issues,
-    relation_element_id,
 )
 
 _DEFAULT_ADAPTERS = (
@@ -105,104 +100,6 @@ def default_registry() -> SourceAdapterRegistry:
 
 def _is_identity_bindings_document(document: dict) -> bool:
     return document.get("kind") == "ArchitectureIdentityBindings"
-
-
-def merge_models(models: Sequence[ArchitectureModel]) -> ArchitectureModel:
-    """Combines partial models from multiple adapters/sources, deduping entities by id (first
-    wins) - unchanged from the old `app.ingestion.pipeline.merge_models`, just relocated: owner-
-    scoped ids are already the correct merge key, so this needed no behavior change.
-    """
-    services: dict[str, Service] = {}
-    operations: dict[str, Operation] = {}
-    queues: dict[str, Queue] = {}
-    messages: dict[str, Message] = {}
-    schemas: dict[str, Schema] = {}
-    relations = []
-    seen_relations: set[tuple[str, str, str]] = set()
-    provenance: list[Provenance] = []
-    # I2 Draft 0.2 §3 prerequisite slice (PR B), §7.1: dedup keys are this PR's own choice, matching
-    # the pattern `relations`' own (type, source_id, target_id) key already establishes - not
-    # literally named by the spec text, which describes the merge/conflict *rule*, not an in-memory
-    # dict key. First-wins here, exactly like every other entity kind above: the real per-source
-    # evidence union (§7.1: "equal semantic digests merge contributions and union evidence") is a
-    # later slice's graph-write concern, once a real adapter and persistence path exist - nothing
-    # populates these fields yet.
-    infrastructure_entities: dict[str, InfrastructureEntity] = {}
-    infrastructure_contributions: dict[tuple[str, str], InfrastructureContribution] = {}
-    infrastructure_claims: dict[tuple[str, str, str | None], InfrastructureClaim] = {}
-    # v0.5.0 I4: first-wins by id, exactly like Queue. The two internal carriers' ids are
-    # source-scoped (see app.canonical.pubsub), so they never collide across sources.
-    topics: dict[str, Topic] = {}
-    subscriptions: dict[str, Subscription] = {}
-    pubsub_declarations: dict[str, PubSubDeclaration] = {}
-    dead_letter_configurations: dict[str, SubscriptionDeadLetterConfiguration] = {}
-
-    for model in models:
-        for service in model.services:
-            services.setdefault(service.id, service)
-        for operation in model.operations:
-            operations.setdefault(operation.id, operation)
-        for queue in model.queues:
-            queues.setdefault(queue.id, queue)
-        for message in model.messages:
-            messages.setdefault(message.id, message)
-        for schema in model.schemas:
-            schemas.setdefault(schema.id, schema)
-        for relation in model.relations:
-            key = (relation.type, relation.source_id, relation.target_id)
-            if key not in seen_relations:
-                seen_relations.add(key)
-                relations.append(relation)
-        provenance.extend(model.provenance)
-        for topic in model.topics:
-            topics.setdefault(topic.id, topic)
-        for subscription in model.subscriptions:
-            subscriptions.setdefault(subscription.id, subscription)
-        for declaration in model.pubsub_declarations:
-            pubsub_declarations.setdefault(declaration.id, declaration)
-        for configuration in model.subscription_dead_letter_configurations:
-            dead_letter_configurations.setdefault(configuration.id, configuration)
-        for entity in model.infrastructure_entities:
-            infrastructure_entities.setdefault(entity.id, entity)
-        for contribution in model.infrastructure_contributions:
-            infrastructure_contributions.setdefault(
-                (contribution.entity_id, contribution.source_instance_id), contribution
-            )
-        for claim in model.infrastructure_claims:
-            # §7.2: a claim's identity is shared across sources (hash of kind/subject/object), and
-            # "deterministic evidence union" is required - first-wins would silently discard the
-            # second source's evidence here, exactly as `SET n += $props` would overwrite it at the
-            # graph layer (a real bug found in PR review). Union and re-sort so the merged claim
-            # still satisfies its own sorted/duplicate-free invariant.
-            key = (claim.kind, claim.subject_id, claim.object_id)
-            existing = infrastructure_claims.get(key)
-            if existing is None:
-                infrastructure_claims[key] = claim
-            elif set(claim.evidence_refs) - set(existing.evidence_refs):
-                infrastructure_claims[key] = existing.model_copy(
-                    update={
-                        "evidence_refs": sorted(
-                            set(existing.evidence_refs) | set(claim.evidence_refs)
-                        )
-                    }
-                )
-
-    return ArchitectureModel(
-        services=list(services.values()),
-        operations=list(operations.values()),
-        queues=list(queues.values()),
-        messages=list(messages.values()),
-        schemas=list(schemas.values()),
-        relations=relations,
-        provenance=provenance,
-        infrastructure_entities=list(infrastructure_entities.values()),
-        infrastructure_contributions=list(infrastructure_contributions.values()),
-        infrastructure_claims=list(infrastructure_claims.values()),
-        topics=list(topics.values()),
-        subscriptions=list(subscriptions.values()),
-        pubsub_declarations=list(pubsub_declarations.values()),
-        subscription_dead_letter_configurations=list(dead_letter_configurations.values()),
-    )
 
 
 class _RunServiceIdentityResolver:
@@ -471,7 +368,7 @@ def _model_element_ids(model: ArchitectureModel) -> frozenset[str]:
     `CanonicalValidationIssue.element_ids`."""
     return frozenset(
         {entity.id for field in _MODEL_ENTITY_FIELDS for entity in getattr(model, field)}
-        | {relation_element_id(relation) for relation in model.relations}
+        | {relation_key(relation) for relation in model.relations}
     )
 
 
@@ -619,54 +516,49 @@ def _build_inventory_snapshot(
     )
 
 
-def run_discovery(
+def _run_result(
     discoverer: SourceDiscoverer,
+    registry: SourceAdapterRegistry,
+    discovery_outcome: DiscoveryOutcome,
+    tombstones: Sequence[Tombstone],
     *,
-    registry: SourceAdapterRegistry | None = None,
-    migration_mappings: SharedIdentityMappingIndex | None = None,
-    tombstones: Sequence[Tombstone] = (),
+    status: InventoryStatus,
+    commit_eligible: bool,
+    merged_model: ArchitectureModel,
+    source_outcomes: dict[str, SourceRunOutcome],
+    diagnostics: Sequence[IngestionDiagnostic],
 ) -> DiscoveryRunResult:
-    """I2 Draft 0.2 §3 prerequisite slice, items 1/3: the source-neutral discovery entry point -
-    accepts any configured `SourceDiscoverer`, with no source-kind branch inside this function.
-    `run_filesystem_discovery` below is now a thin compatibility wrapper over this function so every
-    existing filesystem caller/test keeps working unchanged.
-    """
-    registry = registry or default_registry()
-    shared_identity_index = migration_mappings or EMPTY_SHARED_IDENTITY_INDEX
-    discovery_outcome = discoverer.discover()
-
-    if not discovery_outcome.enumeration_complete:
-        status = classify_inventory_status(source_results=(), discoverer_enumeration_complete=False)
-        return DiscoveryRunResult(
-            inventory_status=status,
-            commit_eligible=run_is_eligible_to_commit(status),
+    """Every `run_discovery` return path's result, with its inventory snapshot built from the same
+    status, source outcomes and diagnostics."""
+    return DiscoveryRunResult(
+        inventory_status=status,
+        commit_eligible=commit_eligible,
+        discovery_scope_id=discovery_outcome.discovery_scope_id,
+        scope_definition_digest=discovery_outcome.scope_definition_digest,
+        merged_model=merged_model,
+        source_outcomes=source_outcomes,
+        diagnostics=tuple(diagnostics),
+        inventory_snapshot=_build_inventory_snapshot(
+            discoverer_identity=discoverer.discoverer_identity,
+            registry=registry,
             discovery_scope_id=discovery_outcome.discovery_scope_id,
             scope_definition_digest=discovery_outcome.scope_definition_digest,
-            merged_model=ArchitectureModel(),
-            source_outcomes={},
-            diagnostics=discovery_outcome.diagnostics,
-            inventory_snapshot=_build_inventory_snapshot(
-                discoverer_identity=discoverer.discoverer_identity,
-                registry=registry,
-                discovery_scope_id=discovery_outcome.discovery_scope_id,
-                scope_definition_digest=discovery_outcome.scope_definition_digest,
-                status=status,
-                source_outcomes={},
-                diagnostics=discovery_outcome.diagnostics,
-                tombstones=tombstones,
-            ),
-            expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
-        )
-
-    # Canonical order (by source_instance_id) so permuting discovery order can never change the
-    # result - I1 spec §4.2's permutation-independence requirement.
-    loaded_sources = tuple(
-        sorted(discovery_outcome.loaded_sources, key=lambda s: s.descriptor.source_instance_id)
+            status=status,
+            source_outcomes=source_outcomes,
+            diagnostics=diagnostics,
+            tombstones=tombstones,
+        ),
+        expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
     )
-    run_diagnostics: list[IngestionDiagnostic] = list(discovery_outcome.diagnostics)
 
-    # Phase 1: discover and validate every ArchitectureIdentityBindings manifest before any
-    # OpenAPI/AsyncAPI document is mapped (I1 spec §4.2's two-phase evaluation order).
+
+def _bind_identity_manifests(
+    loaded_sources: Sequence[LoadedSource], run_diagnostics: list[IngestionDiagnostic]
+) -> tuple[BindingIndex, bool]:
+    """Phase 1: discover and validate every ArchitectureIdentityBindings manifest before any
+    OpenAPI/AsyncAPI document is mapped (I1 spec §4.2's two-phase evaluation order). Appends to
+    `run_diagnostics`; returns the binding index and whether phase 1 failed - judged over every run
+    diagnostic so far, the discoverer's own included."""
     binding_documents = []
     known_source_instance_ids = {s.descriptor.source_instance_id for s in loaded_sources}
     for loaded in loaded_sources:
@@ -693,39 +585,21 @@ def run_discovery(
         )
         for d in run_diagnostics
     )
-    if phase1_failed:
-        status = classify_inventory_status(source_results=(), discoverer_enumeration_complete=False)
-        return DiscoveryRunResult(
-            inventory_status=status,
-            commit_eligible=run_is_eligible_to_commit(status),
-            discovery_scope_id=discovery_outcome.discovery_scope_id,
-            scope_definition_digest=discovery_outcome.scope_definition_digest,
-            merged_model=ArchitectureModel(),
-            source_outcomes={},
-            diagnostics=tuple(run_diagnostics),
-            inventory_snapshot=_build_inventory_snapshot(
-                discoverer_identity=discoverer.discoverer_identity,
-                registry=registry,
-                discovery_scope_id=discovery_outcome.discovery_scope_id,
-                scope_definition_digest=discovery_outcome.scope_definition_digest,
-                status=status,
-                source_outcomes={},
-                diagnostics=run_diagnostics,
-                tombstones=tombstones,
-            ),
-            expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
-        )
+    return binding_index, phase1_failed
 
-    resolver = _RunServiceIdentityResolver(_binding_index_to_pointer_bindings(binding_index))
-    shared_identity_resolver = _RunSharedIdentityResolver(shared_identity_index)
-    run_mapping_context_digest = _compute_mapping_context_digest(
-        binding_index, registry, shared_identity_index
-    )
 
-    mappable_sources = [
-        loaded for loaded in loaded_sources if not _is_identity_bindings_document(loaded.document)
-    ]
-
+def _map_sources(
+    mappable_sources: Sequence[LoadedSource],
+    registry: SourceAdapterRegistry,
+    *,
+    resolver: ServiceIdentityResolver,
+    shared_identity_resolver: SharedIdentityResolver,
+    mapping_context_digest: str,
+    run_diagnostics: list[IngestionDiagnostic],
+) -> dict[str, SourceRunOutcome]:
+    """Maps every non-manifest source with the adapter that claims it, one dependency phase at a
+    time (a later phase sees the earlier phases' merged model), then gives every unclaimed source a
+    REJECTED_UNSUPPORTED outcome. Appends each outcome's diagnostics to `run_diagnostics`."""
     source_outcomes: dict[str, SourceRunOutcome] = {}
     phase_upstream_model = ArchitectureModel()
 
@@ -758,7 +632,7 @@ def run_discovery(
                 service_identity=resolver,
                 shared_identity=shared_identity_resolver,
                 upstream_model=phase_upstream_model,
-                mapping_context_digest=run_mapping_context_digest,
+                mapping_context_digest=mapping_context_digest,
             )
             source_outcomes[source_instance_id] = SourceRunOutcome(
                 descriptor_locator=loaded.descriptor.locator,
@@ -799,15 +673,20 @@ def run_discovery(
             ),
         )
     run_diagnostics.extend(unmatched_diagnostics)
+    return source_outcomes
 
-    source_models = [outcome.outcome.model for outcome in source_outcomes.values()]
 
-    # §8.1/§9.1: "Two current owners explicitly mapped to one shared Schema ID with different
-    # canonical hashes are REJECTED_CONFLICT" (and the Message equivalent) - only visible once every
-    # source's own claims are collected together, so this runs on the pre-merge per-source model
-    # list, before merge_models' own first-wins dedup could discard the disagreement. I2 Draft 0.2
-    # §7.1's equivalent rule for infrastructure entity contributions is checked the same way, at the
-    # same point, even though nothing populates infrastructure_contributions yet.
+def _content_conflicts(
+    source_outcomes: Mapping[str, SourceRunOutcome], source_models: Sequence[ArchitectureModel]
+) -> tuple[tuple[IngestionDiagnostic, ...], frozenset[str] | set[str]]:
+    """Cross-source content conflicts and the sources that caused one.
+
+    §8.1/§9.1: "Two current owners explicitly mapped to one shared Schema ID with different
+    canonical hashes are REJECTED_CONFLICT" (and the Message equivalent) - only visible once every
+    source's own claims are collected together, so this runs on the pre-merge per-source model
+    list, before merge_models' own first-wins dedup could discard the disagreement. I2 Draft 0.2
+    §7.1's equivalent rule for infrastructure entity contributions is checked the same way, at the
+    same point, even though nothing populates infrastructure_contributions yet."""
     infrastructure_conflicts = detect_infrastructure_entity_content_conflicts(source_models)
     # v0.5.0 I4 §6.2: a Subscription bound to two different Topics across sources.
     subscription_conflicts = detect_subscription_topic_binding_conflicts(
@@ -825,6 +704,75 @@ def run_discovery(
             key=lambda d: (d.code, d.source_pointer or ""),
         )
     )
+    return content_conflicts, conflicted_source_instance_ids
+
+
+def run_discovery(
+    discoverer: SourceDiscoverer,
+    *,
+    registry: SourceAdapterRegistry | None = None,
+    migration_mappings: SharedIdentityMappingIndex | None = None,
+    tombstones: Sequence[Tombstone] = (),
+) -> DiscoveryRunResult:
+    """I2 Draft 0.2 §3 prerequisite slice, items 1/3: the source-neutral discovery entry point -
+    accepts any configured `SourceDiscoverer`, with no source-kind branch inside this function.
+    `run_filesystem_discovery` below is now a thin compatibility wrapper over this function so every
+    existing filesystem caller/test keeps working unchanged.
+    """
+    registry = registry or default_registry()
+    shared_identity_index = migration_mappings or EMPTY_SHARED_IDENTITY_INDEX
+    discovery_outcome = discoverer.discover()
+
+    def result(**fields) -> DiscoveryRunResult:
+        return _run_result(discoverer, registry, discovery_outcome, tombstones, **fields)
+
+    if not discovery_outcome.enumeration_complete:
+        status = classify_inventory_status(source_results=(), discoverer_enumeration_complete=False)
+        return result(
+            status=status,
+            commit_eligible=run_is_eligible_to_commit(status),
+            merged_model=ArchitectureModel(),
+            source_outcomes={},
+            diagnostics=discovery_outcome.diagnostics,
+        )
+
+    # Canonical order (by source_instance_id) so permuting discovery order can never change the
+    # result - I1 spec §4.2's permutation-independence requirement.
+    loaded_sources = tuple(
+        sorted(discovery_outcome.loaded_sources, key=lambda s: s.descriptor.source_instance_id)
+    )
+    run_diagnostics: list[IngestionDiagnostic] = list(discovery_outcome.diagnostics)
+
+    binding_index, phase1_failed = _bind_identity_manifests(loaded_sources, run_diagnostics)
+    if phase1_failed:
+        status = classify_inventory_status(source_results=(), discoverer_enumeration_complete=False)
+        return result(
+            status=status,
+            commit_eligible=run_is_eligible_to_commit(status),
+            merged_model=ArchitectureModel(),
+            source_outcomes={},
+            diagnostics=run_diagnostics,
+        )
+
+    source_outcomes = _map_sources(
+        [
+            loaded
+            for loaded in loaded_sources
+            if not _is_identity_bindings_document(loaded.document)
+        ],
+        registry,
+        resolver=_RunServiceIdentityResolver(_binding_index_to_pointer_bindings(binding_index)),
+        shared_identity_resolver=_RunSharedIdentityResolver(shared_identity_index),
+        mapping_context_digest=_compute_mapping_context_digest(
+            binding_index, registry, shared_identity_index
+        ),
+        run_diagnostics=run_diagnostics,
+    )
+    source_models = [outcome.outcome.model for outcome in source_outcomes.values()]
+
+    content_conflicts, conflicted_source_instance_ids = _content_conflicts(
+        source_outcomes, source_models
+    )
     if content_conflicts:
         run_diagnostics.extend(content_conflicts)
         # §10: `K8S_RESOURCE_CONFLICT`'s outcome is "REJECTED_CONFLICT; no commit" - a source
@@ -838,25 +786,12 @@ def run_discovery(
             )
             for source_instance_id, run_outcome in source_outcomes.items()
         }
-        return DiscoveryRunResult(
-            inventory_status=InventoryStatus.PARTIAL,
+        return result(
+            status=InventoryStatus.PARTIAL,
             commit_eligible=False,
-            discovery_scope_id=discovery_outcome.discovery_scope_id,
-            scope_definition_digest=discovery_outcome.scope_definition_digest,
             merged_model=ArchitectureModel(),
             source_outcomes=source_outcomes,
-            diagnostics=tuple(run_diagnostics),
-            inventory_snapshot=_build_inventory_snapshot(
-                discoverer_identity=discoverer.discoverer_identity,
-                registry=registry,
-                discovery_scope_id=discovery_outcome.discovery_scope_id,
-                scope_definition_digest=discovery_outcome.scope_definition_digest,
-                status=InventoryStatus.PARTIAL,
-                source_outcomes=source_outcomes,
-                diagnostics=run_diagnostics,
-                tombstones=tombstones,
-            ),
-            expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
+            diagnostics=run_diagnostics,
         )
 
     merged_model = merge_models(source_models)
@@ -872,52 +807,24 @@ def run_discovery(
             source_outcomes, validation_issues
         )
         run_diagnostics.extend(validation_diagnostics)
-        status = InventoryStatus.FAILED if unattributed else InventoryStatus.PARTIAL
-        return DiscoveryRunResult(
-            inventory_status=status,
+        return result(
+            status=InventoryStatus.FAILED if unattributed else InventoryStatus.PARTIAL,
             commit_eligible=False,
-            discovery_scope_id=discovery_outcome.discovery_scope_id,
-            scope_definition_digest=discovery_outcome.scope_definition_digest,
             merged_model=ArchitectureModel(),
             source_outcomes=source_outcomes,
-            diagnostics=tuple(run_diagnostics),
-            inventory_snapshot=_build_inventory_snapshot(
-                discoverer_identity=discoverer.discoverer_identity,
-                registry=registry,
-                discovery_scope_id=discovery_outcome.discovery_scope_id,
-                scope_definition_digest=discovery_outcome.scope_definition_digest,
-                status=status,
-                source_outcomes=source_outcomes,
-                diagnostics=run_diagnostics,
-                tombstones=tombstones,
-            ),
-            expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
+            diagnostics=run_diagnostics,
         )
 
     status = classify_inventory_status(
         source_results=[o.outcome.result for o in source_outcomes.values()],
         discoverer_enumeration_complete=True,
     )
-
-    return DiscoveryRunResult(
-        inventory_status=status,
+    return result(
+        status=status,
         commit_eligible=run_is_eligible_to_commit(status),
-        discovery_scope_id=discovery_outcome.discovery_scope_id,
-        scope_definition_digest=discovery_outcome.scope_definition_digest,
         merged_model=merged_model,
         source_outcomes=source_outcomes,
-        diagnostics=tuple(run_diagnostics),
-        inventory_snapshot=_build_inventory_snapshot(
-            discoverer_identity=discoverer.discoverer_identity,
-            registry=registry,
-            discovery_scope_id=discovery_outcome.discovery_scope_id,
-            scope_definition_digest=discovery_outcome.scope_definition_digest,
-            status=status,
-            source_outcomes=source_outcomes,
-            diagnostics=run_diagnostics,
-            tombstones=tombstones,
-        ),
-        expected_prior_inventory_revision=discovery_outcome.expected_prior_inventory_revision,
+        diagnostics=run_diagnostics,
     )
 
 

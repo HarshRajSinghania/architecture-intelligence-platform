@@ -1,29 +1,17 @@
-"""Small helpers shared by the concrete SourceAdapter implementations in this package. Not part of
-the public seam (app.sources.registry) - just avoids duplicating the same few lines across
-openapi_adapter.py/asyncapi_adapter.py/manifest_adapter.py.
-"""
+"""Schema normalization shared by the OpenAPI and AsyncAPI adapters: the RFC 8785-hashed canonical
+projection of a schema tree (I1 spec §8.1), reference resolution into it, and display naming."""
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
-from app.canonical.model import ArchitectureModel, Message, Schema
-from app.sources.identity import (
-    normalize_relative_posix_path,
-    normalized_document_and_reference_projection_bytes,
-)
-from app.sources.jcs import canonical_sha256_hex, sort_by_canonical_hash
-from app.sources.model import DiagnosticCode, IngestionDiagnostic, IngestionResult, LoadedSource
+from app.common.jcs import canonical_sha256_hex, sort_by_canonical_hash
+from app.sources.model import DiagnosticCode
 from app.sources.reference_resolution import (
     DEFAULT_MAX_REFERENCE_DEPTH,
     ReferenceResolutionError,
     ResolutionCache,
-    new_resolution_cache,
     resolve_and_read,
-    walk_transitive_closure,
 )
-from app.sources.registry import AdapterOutcome
-from app.sources.service_identity import ServiceIdentityOutcome, ServiceIdentityResolution
 
 # I1 spec §8.1: "The canonical projection excludes only description, summary, example, examples,
 # and externalDocs." Applied at every level of a normalized schema tree (top-level and every
@@ -33,60 +21,8 @@ EXCLUDED_SCHEMA_FIELDS = frozenset(
     {"description", "summary", "example", "examples", "externalDocs"}
 )
 
+
 _COMPOSITION_KEYS = ("allOf", "oneOf", "anyOf")
-
-_IDENTITY_OUTCOME_TO_RESULT = {
-    ServiceIdentityOutcome.REJECTED_UNSUPPORTED: IngestionResult.REJECTED_UNSUPPORTED,
-    ServiceIdentityOutcome.REJECTED_CONFLICT: IngestionResult.REJECTED_CONFLICT,
-    ServiceIdentityOutcome.REJECTED_INVALID: IngestionResult.REJECTED_INVALID,
-}
-
-
-def resolved_service_id(resolution: ServiceIdentityResolution) -> str:
-    """The service id of a RESOLVED resolution (the caller has already checked the outcome)."""
-    # ServiceIdentityResolution rejects a RESOLVED outcome without a service_id at construction.
-    assert resolution.service_id is not None
-    return resolution.service_id
-
-
-def rejected_outcome_for_identity(resolution: ServiceIdentityResolution) -> AdapterOutcome:
-    return AdapterOutcome(
-        result=_IDENTITY_OUTCOME_TO_RESULT[resolution.outcome],
-        model=ArchitectureModel(),
-        diagnostics=tuple(resolution.diagnostics),
-        semantic_input_digest=None,
-    )
-
-
-def build_resolution_cache(loaded: LoadedSource) -> tuple[ResolutionCache, str]:
-    """Builds the per-source `ResolutionCache` used for every `$ref` this source's adapter resolves
-    (schema/message/payload definitions alike), plus the root document's own normalized relative
-    path - the key both the cache and every `resolve_and_read`/`resolve_and_normalize_schema` call
-    for this source key off.
-
-    `loaded.source_root` is empty only for a `LoadedSource` built directly by a unit test with no
-    real filesystem backing (see its own docstring) - there, no cross-file resolution is reachable
-    anyway (only fragment-only `#/...` refs are), so the root's own locator string stands in for its
-    relative path: self-consistent for cache keying, even though it isn't a real relative-to-root
-    path.
-    """
-    locator = loaded.descriptor.locator
-    if loaded.source_root:
-        root_relative_path = normalize_relative_posix_path(
-            str(Path(locator).relative_to(Path(loaded.source_root)))
-        )
-    else:
-        root_relative_path = normalize_relative_posix_path(locator)
-
-    source_root = Path(loaded.source_root) if loaded.source_root else Path(locator).parent
-    root_bytes = Path(locator).read_bytes() if loaded.source_root else b""
-    cache = new_resolution_cache(
-        source_root,
-        root_relative_path=root_relative_path,
-        root_document=loaded.document,
-        root_bytes=root_bytes,
-    )
-    return cache, root_relative_path
 
 
 # Keys whose VALUE is a map of arbitrary user-chosen names to sub-schemas - the map's own keys are
@@ -94,6 +30,7 @@ def build_resolution_cache(loaded: LoadedSource) -> tuple[ResolutionCache, str]:
 # filtering: a property or definition literally named "description" (or "example", etc.) is real
 # schema content, not the schema-level `description` annotation that keyword otherwise denotes.
 _NAMED_SCHEMA_MAP_KEYS = frozenset({"properties", "patternProperties", "definitions", "$defs"})
+
 
 # I1 spec §8.1: "All validation/serialization keywords and every extension key are retained." An
 # `x-...` vendor extension's value is arbitrary, opaque vendor data - not a schema construct at
@@ -301,111 +238,4 @@ def resolve_and_normalize_schema(
         canonical_hash=canonical_sha256_hex(normalized),
         has_uninterpreted_composition=bool(composition_seen),
         normalized_value=normalized,
-    )
-
-
-_REFERENCE_ERROR_RESULT = {
-    DiagnosticCode.REMOTE_REFERENCE_UNSUPPORTED: IngestionResult.REJECTED_UNSUPPORTED,
-    DiagnosticCode.REFERENCE_CYCLE_UNSUPPORTED: IngestionResult.REJECTED_UNSUPPORTED,
-    DiagnosticCode.REFERENCE_LIMIT_EXCEEDED: IngestionResult.REJECTED_UNSUPPORTED,
-    DiagnosticCode.REFERENCE_INVALID: IngestionResult.REJECTED_INVALID,
-}
-
-
-def rejected_outcome_for_reference_error(
-    exc: ReferenceResolutionError, *, source_pointer: str
-) -> AdapterOutcome:
-    """§8.1's construct-outcome table: any `$ref` resolution failure anywhere in a schema/message/
-    payload tree rejects the *whole source* - "Whole-source rejection occurs only for ... reference
-    cycle/limit, invalid structure/reference..." - never just the one affected relation.
-    """
-    return AdapterOutcome(
-        result=_REFERENCE_ERROR_RESULT[exc.code],
-        model=ArchitectureModel(),
-        diagnostics=(
-            IngestionDiagnostic(code=exc.code, message=exc.message, source_pointer=source_pointer),
-        ),
-        semantic_input_digest=None,
-    )
-
-
-def enforce_reference_closure(
-    document: dict, *, root_relative_path: str, cache: ResolutionCache, source_pointer: str
-) -> AdapterOutcome | None:
-    """§8's authoritative depth/file-count/byte-budget and cross-file-cycle enforcement. The
-    discoverer's own `walk_transitive_closure` call (`filesystem_discoverer._best_effort_closure_
-    digest`) is deliberately best-effort/non-fatal - it exists only to compute the provenance
-    digest early. THIS call, made by the adapter itself before any per-construct schema resolution,
-    is the actual enforcement: without it, a reference chain whose per-hop resolution individually
-    succeeds (e.g. 20 single-`$ref` hops, each resolving one file at a time) would never trip any
-    limit, since no single `resolve_and_normalize_schema` call for one construct ever counts total
-    depth/files/bytes across the *whole* closure - only a closure-wide walk can. Returns `None` on
-    success, or the whole-source rejection to return immediately from `map()` on failure.
-    """
-    try:
-        walk_transitive_closure(document, root_relative_path=root_relative_path, cache=cache)
-    except ReferenceResolutionError as exc:
-        return rejected_outcome_for_reference_error(exc, source_pointer=source_pointer)
-    return None
-
-
-def semantic_input_digest_bytes(cache: ResolutionCache) -> bytes:
-    """I1 spec §5.3's "normalized document/reference projection": every document this source's
-    resolution touched - the root plus its whole resolved closure - ordered by normalized relative
-    path. Must be called only after the source's full closure has already been loaded into `cache`
-    (i.e. after `enforce_reference_closure` has run) - otherwise a referenced-file-only edit would
-    be invisible to the resulting `semantic_input_digest` and the revision fence would never see it.
-    """
-    return normalized_document_and_reference_projection_bytes(cache.documents)
-
-
-def upsert_schema_or_conflict(
-    schemas_by_id: dict[str, Schema], schema_id_value: str, candidate: Schema
-) -> IngestionDiagnostic | None:
-    """I1 spec §8.1: "Two current owners explicitly mapped to one shared Schema ID with different
-    canonical hashes are REJECTED_CONFLICT." Two different pointers within one source's own single
-    `map()` call can converge on the same id only via an explicit shared-identity mapping (owner-
-    scoped default ids are collision-free by construction) - this is the within-source half of
-    conflict detection; the cross-source half runs later, over every source's already-returned
-    model, in `app.sources.claim_conflicts`. Returns `None` and performs the upsert when there is no
-    existing entry, or the existing entry's content agrees (silent merge - identical content under
-    a shared id is fine); returns a diagnostic instead of upserting when it disagrees, leaving the
-    first-seen entry in place so the caller's own model stays a valid (if soon-to-be-rejected)
-    snapshot.
-    """
-    existing = schemas_by_id.get(schema_id_value)
-    if existing is None:
-        schemas_by_id[schema_id_value] = candidate
-        return None
-    if existing.canonical_hash == candidate.canonical_hash:
-        return None
-    return IngestionDiagnostic(
-        code=DiagnosticCode.SCHEMA_CONTENT_CONFLICT,
-        message=(
-            f"schema {schema_id_value!r} has disagreeing canonical hashes within one source: "
-            f"{existing.canonical_hash!r} vs {candidate.canonical_hash!r}"
-        ),
-        source_pointer=schema_id_value,
-    )
-
-
-def upsert_message_or_conflict(
-    messages_by_id: dict[str, Message], message_id_value: str, candidate: Message
-) -> IngestionDiagnostic | None:
-    """The message equivalent of `upsert_schema_or_conflict`, comparing `contract_digest` (I1 spec
-    §9.1's semantic-comparison digest) rather than `canonical_hash`.
-    """
-    existing = messages_by_id.get(message_id_value)
-    if existing is None:
-        messages_by_id[message_id_value] = candidate
-        return None
-    if existing.contract_digest == candidate.contract_digest:
-        return None
-    return IngestionDiagnostic(
-        code=DiagnosticCode.MESSAGE_CONTENT_CONFLICT,
-        message=(
-            f"message {message_id_value!r} has disagreeing contract digests within one source: "
-            f"{existing.contract_digest!r} vs {candidate.contract_digest!r}"
-        ),
-        source_pointer=message_id_value,
     )

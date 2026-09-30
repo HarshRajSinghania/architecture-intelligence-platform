@@ -1,0 +1,1285 @@
+{
+  "commit_eligible": true,
+  "diagnostics": [],
+  "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+  "expected_prior_inventory_revision": "<not supplied>",
+  "inventory_snapshot": {
+    "adapter_identities": [
+      "asyncapi-adapter@1",
+      "kubernetes-adapter@1",
+      "manifest-adapter@1",
+      "openapi-adapter@1"
+    ],
+    "capture_time": "<scrubbed>",
+    "diagnostics": [],
+    "discovered_source_ids": [
+      "urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba",
+      "urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54",
+      "urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56",
+      "urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189",
+      "urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5",
+      "urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+    ],
+    "discoverer_identity": "filesystem-discoverer@1",
+    "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+    "inventory_capture_id": "<scrubbed>",
+    "inventory_event_id": null,
+    "inventory_revision": "<scrubbed>",
+    "mapping_rule_identities": [
+      "1",
+      "v1",
+      "v1",
+      "v1"
+    ],
+    "provider_revision": null,
+    "scope_definition_digest": "<scrubbed>",
+    "status": "COMPLETE",
+    "tombstones": []
+  },
+  "inventory_status": "COMPLETE",
+  "merged_model": {
+    "infrastructure_claims": [],
+    "infrastructure_contributions": [],
+    "infrastructure_entities": [],
+    "messages": [
+      {
+        "contract_digest": "0aef1a75d9a3362bacc3c45728c9575eb1f58e94d7c4984af42ed858aa973659",
+        "document_digest": "07302bd19189fec41c954be27b568b1ec68e3eb38e8ad0bb1502e9557bbe0f2d",
+        "id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+        "name": "PaymentRequested",
+        "schema_id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+        "version": "v2"
+      },
+      {
+        "contract_digest": "1323493bb8f953cd6f686d7495894c1e4594b13e52fe84d0f6190b63d7b39039",
+        "document_digest": "bb31865a376d3588ae42c22dd1f93ed9b01ed56659cb5801809ab4fb1c480cc6",
+        "id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+        "name": "InvoiceCreated",
+        "schema_id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "b07d90b1eb6aed50d6c57e6e40efd605dd48a78e6b49c5fc7a55c01bcf23d99e",
+        "document_digest": "6a7f06b63c888da86856e5e596892f7e4b02a779b2c1e383c8435d89c6a8a084",
+        "id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+        "name": "UnknownProducerMessage",
+        "schema_id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+        "version": null
+      },
+      {
+        "contract_digest": "1323493bb8f953cd6f686d7495894c1e4594b13e52fe84d0f6190b63d7b39039",
+        "document_digest": "bb31865a376d3588ae42c22dd1f93ed9b01ed56659cb5801809ab4fb1c480cc6",
+        "id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+        "name": "InvoiceCreated",
+        "schema_id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "0aef1a75d9a3362bacc3c45728c9575eb1f58e94d7c4984af42ed858aa973659",
+        "document_digest": "07302bd19189fec41c954be27b568b1ec68e3eb38e8ad0bb1502e9557bbe0f2d",
+        "id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+        "name": "PaymentRequested",
+        "schema_id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+        "version": "v2"
+      },
+      {
+        "contract_digest": "b07d90b1eb6aed50d6c57e6e40efd605dd48a78e6b49c5fc7a55c01bcf23d99e",
+        "document_digest": "7a9cc822154e981dfec7d8a9d04eef3b7857907fef1b2ec3132120a5357e8053",
+        "id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+        "name": "UnusedMessage",
+        "schema_id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+        "version": null
+      }
+    ],
+    "operations": [
+      {
+        "id": "operation:service:order-service:POST:/orders",
+        "method": "POST",
+        "operation_id": "createOrder",
+        "path": "/orders",
+        "request_schema_ids": [
+          "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274"
+        ],
+        "response_schema_ids": [
+          "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265"
+        ],
+        "service_id": "service:order-service"
+      },
+      {
+        "id": "operation:service:order-service:GET:/orders/{id}",
+        "method": "GET",
+        "operation_id": "getOrder",
+        "path": "/orders/{id}",
+        "request_schema_ids": [],
+        "response_schema_ids": [
+          "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265"
+        ],
+        "service_id": "service:order-service"
+      },
+      {
+        "id": "operation:service:product-service:GET:/products/{id}",
+        "method": "GET",
+        "operation_id": "getProduct",
+        "path": "/products/{id}",
+        "request_schema_ids": [],
+        "response_schema_ids": [
+          "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d"
+        ],
+        "service_id": "service:product-service"
+      }
+    ],
+    "provenance": [
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba",
+        "source_file": "<repo>/examples/payment-service/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56",
+        "source_file": "<repo>/examples/order-service/openapi.yaml",
+        "source_revision": null,
+        "source_type": "OPENAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189",
+        "source_file": "<repo>/examples/invoice-service/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5",
+        "source_file": "<repo>/examples/product-service/openapi.yaml",
+        "source_revision": null,
+        "source_type": "OPENAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732",
+        "source_file": "<repo>/examples/order-service/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:manifest:urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54",
+        "source_file": "<repo>/examples/order-service/architecture.yaml",
+        "source_revision": null,
+        "source_type": "MANIFEST"
+      }
+    ],
+    "pubsub_declarations": [],
+    "queues": [
+      {
+        "id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "name": "payment-q",
+        "namespace": "commerce",
+        "protocol": null,
+        "queue_type": "STANDARD"
+      },
+      {
+        "id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+        "name": "invoice-q",
+        "namespace": "commerce",
+        "protocol": null,
+        "queue_type": "STANDARD"
+      },
+      {
+        "id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+        "name": "unknown-producer-q",
+        "namespace": "commerce",
+        "protocol": null,
+        "queue_type": "STANDARD"
+      },
+      {
+        "id": "queue:owned:72e0a2063c807e17a731d8d5b4e8927ee669c632b4ed960fd0c14795df14cbe5",
+        "name": "payment-dlq",
+        "namespace": "commerce",
+        "protocol": null,
+        "queue_type": "STANDARD"
+      },
+      {
+        "id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+        "name": "unused-q",
+        "namespace": "commerce",
+        "protocol": null,
+        "queue_type": "STANDARD"
+      }
+    ],
+    "relations": [
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "target_id": "queue:owned:72e0a2063c807e17a731d8d5b4e8927ee669c632b4ed960fd0c14795df14cbe5",
+        "type": "DEAD_LETTERS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "service:payment-service",
+        "target_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+        "target_id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "target_id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "service:payment-service",
+        "target_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+        "type": "SENDS"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+        "target_id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+        "target_id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "service:payment-service",
+        "target_id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+        "target_id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+        ],
+        "source_id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+        "target_id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+        ],
+        "source_id": "service:order-service",
+        "target_id": "operation:service:order-service:POST:/orders",
+        "type": "PROVIDES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+        ],
+        "source_id": "operation:service:order-service:POST:/orders",
+        "target_id": "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274",
+        "type": "REQUEST_SCHEMA"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+        ],
+        "source_id": "operation:service:order-service:POST:/orders",
+        "target_id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+        "type": "RESPONSE_SCHEMA"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+        ],
+        "source_id": "service:order-service",
+        "target_id": "operation:service:order-service:GET:/orders/{id}",
+        "type": "PROVIDES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+        ],
+        "source_id": "operation:service:order-service:GET:/orders/{id}",
+        "target_id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+        "type": "RESPONSE_SCHEMA"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+        ],
+        "source_id": "service:invoice-service",
+        "target_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+        ],
+        "source_id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+        "target_id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+        ],
+        "source_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+        "target_id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5"
+        ],
+        "source_id": "service:product-service",
+        "target_id": "operation:service:product-service:GET:/products/{id}",
+        "type": "PROVIDES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5"
+        ],
+        "source_id": "operation:service:product-service:GET:/products/{id}",
+        "target_id": "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d",
+        "type": "RESPONSE_SCHEMA"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "service:order-service",
+        "target_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "type": "SENDS"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+        "target_id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+        "target_id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "service:order-service",
+        "target_id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+        "type": "SENDS"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+        "target_id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+        ],
+        "source_id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+        "target_id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:manifest:urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54"
+        ],
+        "source_id": "service:order-service",
+        "target_id": "operation:service:product-service:GET:/products/{id}",
+        "type": "CALLS"
+      }
+    ],
+    "schemas": [
+      {
+        "canonical_hash": "cb7b65b64de4f7142a88e4e9e9d1a9d5ea022f9f97c5dd046ce31b6f31214a5a",
+        "format": "application/json",
+        "id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+        "name": "PaymentRequestedPayload",
+        "version": null
+      },
+      {
+        "canonical_hash": "1ad4178851efc7c73d7dc130a5d6a22754aabd6a900812aea8dee5e1561af6df",
+        "format": "application/json",
+        "id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+        "name": "InvoiceCreatedPayload",
+        "version": null
+      },
+      {
+        "canonical_hash": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+        "format": "application/json",
+        "id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+        "name": "UnknownProducerMessage payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "166e8733d7396491e2e345902eb9158f912e90f5d49a58e3209c781df149bffc",
+        "format": "application/json",
+        "id": "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274",
+        "name": "OrderRequest",
+        "version": null
+      },
+      {
+        "canonical_hash": "af6acdbdd7a86a5c1d65c9ad808003a7d38221ea084549059ac2a75a9e4e327a",
+        "format": "application/json",
+        "id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+        "name": "Order",
+        "version": null
+      },
+      {
+        "canonical_hash": "1ad4178851efc7c73d7dc130a5d6a22754aabd6a900812aea8dee5e1561af6df",
+        "format": "application/json",
+        "id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+        "name": "InvoiceCreatedPayload",
+        "version": null
+      },
+      {
+        "canonical_hash": "cdbf5169abc54203412aef71b5709c01eaedb99bdd3ddb74caae5b6ced188641",
+        "format": "application/json",
+        "id": "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d",
+        "name": "Product",
+        "version": null
+      },
+      {
+        "canonical_hash": "cb7b65b64de4f7142a88e4e9e9d1a9d5ea022f9f97c5dd046ce31b6f31214a5a",
+        "format": "application/json",
+        "id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+        "name": "PaymentRequestedPayload",
+        "version": null
+      },
+      {
+        "canonical_hash": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+        "format": "application/json",
+        "id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+        "name": "UnusedMessage payload",
+        "version": null
+      }
+    ],
+    "services": [
+      {
+        "id": "service:payment-service",
+        "name": "PaymentService",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:order-service",
+        "name": "OrderService",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:invoice-service",
+        "name": "InvoiceService",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:product-service",
+        "name": "ProductService",
+        "version": "1.0.0"
+      }
+    ],
+    "subscription_dead_letter_configurations": [],
+    "subscriptions": [],
+    "topics": []
+  },
+  "scope_definition_digest": "<scrubbed>",
+  "source_outcomes": {
+    "urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "cfb9687ac086abe34021cc37537d77c9470f4ce55c6820f5bd3c35f2a1d5494d",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/examples/payment-service/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/payment-service/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "0aef1a75d9a3362bacc3c45728c9575eb1f58e94d7c4984af42ed858aa973659",
+              "document_digest": "07302bd19189fec41c954be27b568b1ec68e3eb38e8ad0bb1502e9557bbe0f2d",
+              "id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+              "name": "PaymentRequested",
+              "schema_id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+              "version": "v2"
+            },
+            {
+              "contract_digest": "1323493bb8f953cd6f686d7495894c1e4594b13e52fe84d0f6190b63d7b39039",
+              "document_digest": "bb31865a376d3588ae42c22dd1f93ed9b01ed56659cb5801809ab4fb1c480cc6",
+              "id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+              "name": "InvoiceCreated",
+              "schema_id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+              "version": "v1"
+            },
+            {
+              "contract_digest": "b07d90b1eb6aed50d6c57e6e40efd605dd48a78e6b49c5fc7a55c01bcf23d99e",
+              "document_digest": "6a7f06b63c888da86856e5e596892f7e4b02a779b2c1e383c8435d89c6a8a084",
+              "id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+              "name": "UnknownProducerMessage",
+              "schema_id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+              "version": null
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba",
+              "source_file": "<repo>/examples/payment-service/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [
+            {
+              "id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "name": "payment-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            },
+            {
+              "id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "name": "invoice-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            },
+            {
+              "id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+              "name": "unknown-producer-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            },
+            {
+              "id": "queue:owned:72e0a2063c807e17a731d8d5b4e8927ee669c632b4ed960fd0c14795df14cbe5",
+              "name": "payment-dlq",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "target_id": "queue:owned:72e0a2063c807e17a731d8d5b4e8927ee669c632b4ed960fd0c14795df14cbe5",
+              "type": "DEAD_LETTERS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "service:payment-service",
+              "target_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+              "target_id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "target_id": "message:owned:b9bd80f060aed44e340c0fee54c7c48c9e1b25e40e71becdfc391bee4034dc1a",
+              "type": "CARRIES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "service:payment-service",
+              "target_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "type": "SENDS"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+              "target_id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "target_id": "message:owned:979bbdc8dbcecd9e553e99512a264ac32817ccc9fb55ed15eea3c9367b45f3c7",
+              "type": "CARRIES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "service:payment-service",
+              "target_id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+              "target_id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:3cc592a4945027cdd15ca806ba3d4998db4061e7e84a62aa9118b2063478cbba"
+              ],
+              "source_id": "queue:owned:f2d8cbdb02d7419f630f0c0c6f0a3bd4bea5c0775add1bf3c3a297726fe2f23e",
+              "target_id": "message:owned:7331751c6dc1dfdd4d24c796640bae94f1b089249da8b184c33a4cf54da1adb6",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "cb7b65b64de4f7142a88e4e9e9d1a9d5ea022f9f97c5dd046ce31b6f31214a5a",
+              "format": "application/json",
+              "id": "schema:owned:8a4e5c5c0c075a010e45cb9824d1dfd4c5f2ee89e359d680541de7d830d960f5",
+              "name": "PaymentRequestedPayload",
+              "version": null
+            },
+            {
+              "canonical_hash": "1ad4178851efc7c73d7dc130a5d6a22754aabd6a900812aea8dee5e1561af6df",
+              "format": "application/json",
+              "id": "schema:owned:bfa6c6e9ece4cee15516e596915955980a22dfb35f366f28f6a3a2f9688608f2",
+              "name": "InvoiceCreatedPayload",
+              "version": null
+            },
+            {
+              "canonical_hash": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+              "format": "application/json",
+              "id": "schema:owned:eaef6e686566c55f0568c5e9b2e1a74059d52eef56faac8c995effc5844adf82",
+              "name": "UnknownProducerMessage payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:payment-service",
+              "name": "PaymentService",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "3333dc56938ddfbfad86ae9bd627b7f324072cd4e2cde1e1c90c0c8566cecd97"
+      }
+    },
+    "urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54": {
+      "descriptor": {
+        "adapter_identity": "manifest-adapter@1",
+        "content_sha256": "1756efcd98e0c3bb9ee377cde1d6bc54f17cf5130579aafd3910ca15370e57dd",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": null,
+        "locator": "<repo>/examples/order-service/architecture.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "manifest-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/order-service/architecture.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:manifest:urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54",
+              "source_file": "<repo>/examples/order-service/architecture.yaml",
+              "source_revision": null,
+              "source_type": "MANIFEST"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:manifest:urn:aip:source:filesystem:5ce532518b49a66ac861423e9349cf12fd70d3ce513fdd1c787af9e7d8920a54"
+              ],
+              "source_id": "service:order-service",
+              "target_id": "operation:service:product-service:GET:/products/{id}",
+              "type": "CALLS"
+            }
+          ],
+          "schemas": [],
+          "services": [],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "8870b83877656ad4fce26a8ccf982b94e422b91b00bd3102e58c3e99e2af75dc"
+      }
+    },
+    "urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56": {
+      "descriptor": {
+        "adapter_identity": "openapi-adapter@1",
+        "content_sha256": "dbba386ffebf70293543f2c14ba159975ec5bee48b999d050bcbfa40a3686c8b",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": "3.1.0",
+        "locator": "<repo>/examples/order-service/openapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "openapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/order-service/openapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [],
+          "operations": [
+            {
+              "id": "operation:service:order-service:POST:/orders",
+              "method": "POST",
+              "operation_id": "createOrder",
+              "path": "/orders",
+              "request_schema_ids": [
+                "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274"
+              ],
+              "response_schema_ids": [
+                "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265"
+              ],
+              "service_id": "service:order-service"
+            },
+            {
+              "id": "operation:service:order-service:GET:/orders/{id}",
+              "method": "GET",
+              "operation_id": "getOrder",
+              "path": "/orders/{id}",
+              "request_schema_ids": [],
+              "response_schema_ids": [
+                "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265"
+              ],
+              "service_id": "service:order-service"
+            }
+          ],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56",
+              "source_file": "<repo>/examples/order-service/openapi.yaml",
+              "source_revision": null,
+              "source_type": "OPENAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+              ],
+              "source_id": "service:order-service",
+              "target_id": "operation:service:order-service:POST:/orders",
+              "type": "PROVIDES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+              ],
+              "source_id": "operation:service:order-service:POST:/orders",
+              "target_id": "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274",
+              "type": "REQUEST_SCHEMA"
+            },
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+              ],
+              "source_id": "operation:service:order-service:POST:/orders",
+              "target_id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+              "type": "RESPONSE_SCHEMA"
+            },
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+              ],
+              "source_id": "service:order-service",
+              "target_id": "operation:service:order-service:GET:/orders/{id}",
+              "type": "PROVIDES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:7f055a6aea1cdd580b66c8e0000308daa6fc513f8d9b62c9842470d88fcbcb56"
+              ],
+              "source_id": "operation:service:order-service:GET:/orders/{id}",
+              "target_id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+              "type": "RESPONSE_SCHEMA"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "166e8733d7396491e2e345902eb9158f912e90f5d49a58e3209c781df149bffc",
+              "format": "application/json",
+              "id": "schema:owned:4cbd6da55388dfef2737388654541d4b4d45ee6d9d23d90b7c81b641a3c26274",
+              "name": "OrderRequest",
+              "version": null
+            },
+            {
+              "canonical_hash": "af6acdbdd7a86a5c1d65c9ad808003a7d38221ea084549059ac2a75a9e4e327a",
+              "format": "application/json",
+              "id": "schema:owned:aecedc4db1c53e10a083adbdedab9159360c1cb5c966038f6c2575246eb53265",
+              "name": "Order",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:order-service",
+              "name": "OrderService",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "3c75e49debb52c0a9ceb36d558e8c181261adf99de46d56184af5f19a5ef7b3e"
+      }
+    },
+    "urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "ad897d191b602bba1a0b093f19a959e09ad88c0d115aafa678aa0b057cd63a3a",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/examples/invoice-service/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/invoice-service/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "1323493bb8f953cd6f686d7495894c1e4594b13e52fe84d0f6190b63d7b39039",
+              "document_digest": "bb31865a376d3588ae42c22dd1f93ed9b01ed56659cb5801809ab4fb1c480cc6",
+              "id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+              "name": "InvoiceCreated",
+              "schema_id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189",
+              "source_file": "<repo>/examples/invoice-service/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [
+            {
+              "id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "name": "invoice-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+              ],
+              "source_id": "service:invoice-service",
+              "target_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+              ],
+              "source_id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+              "target_id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:833e2828fe1aab512d1943c48acb72d7b94bee00925e01a60e8c26e04a6ec189"
+              ],
+              "source_id": "queue:owned:23a2fad36cd9f579cfe97c465dfd1f68722c05afc04c7d39913c33fc7155e601",
+              "target_id": "message:owned:c5ba2d08723d282f9b6c812dcfaf2b5f49d3ac3d611efbe99a137464317fc8fa",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "1ad4178851efc7c73d7dc130a5d6a22754aabd6a900812aea8dee5e1561af6df",
+              "format": "application/json",
+              "id": "schema:owned:5156b3d33948eb54089f224fe5077bb464ca596223d0df336901233e4b696364",
+              "name": "InvoiceCreatedPayload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:invoice-service",
+              "name": "InvoiceService",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "3cbc261d149a425e2265cbba80130c1e3b554ed9b1f2e603f8c527b37a98b985"
+      }
+    },
+    "urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5": {
+      "descriptor": {
+        "adapter_identity": "openapi-adapter@1",
+        "content_sha256": "c0c7365b56acf00d556018673660db5fb8fae286d54c4bea998b41c26c1c2e7d",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": "3.1.0",
+        "locator": "<repo>/examples/product-service/openapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "openapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/product-service/openapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [],
+          "operations": [
+            {
+              "id": "operation:service:product-service:GET:/products/{id}",
+              "method": "GET",
+              "operation_id": "getProduct",
+              "path": "/products/{id}",
+              "request_schema_ids": [],
+              "response_schema_ids": [
+                "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d"
+              ],
+              "service_id": "service:product-service"
+            }
+          ],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5",
+              "source_file": "<repo>/examples/product-service/openapi.yaml",
+              "source_revision": null,
+              "source_type": "OPENAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5"
+              ],
+              "source_id": "service:product-service",
+              "target_id": "operation:service:product-service:GET:/products/{id}",
+              "type": "PROVIDES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:openapi:urn:aip:source:filesystem:bc68d5827d7bed2c4ec37eb12c23fa0319e78cccdfd6e9efd163d4b1329159e5"
+              ],
+              "source_id": "operation:service:product-service:GET:/products/{id}",
+              "target_id": "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d",
+              "type": "RESPONSE_SCHEMA"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "cdbf5169abc54203412aef71b5709c01eaedb99bdd3ddb74caae5b6ced188641",
+              "format": "application/json",
+              "id": "schema:owned:c81bf45e5c5c11498a96dccb5125886f3fb2676df5b4540e9fb9c8c5f33a916d",
+              "name": "Product",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:product-service",
+              "name": "ProductService",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "5b2171d6dd564705d098ef52c8fc2177773c56898cba38d8f09c4195b16721f2"
+      }
+    },
+    "urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "7a628e5e3aee0f3d1e897e21ba1ed0d6a6be02ebbc0d49c99badadeb301a3cb2",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:3e639e448cea5aefb36147004ac98a0010660d4082bcf9d6717a592b15485be5",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/examples/order-service/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/examples/order-service/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "0aef1a75d9a3362bacc3c45728c9575eb1f58e94d7c4984af42ed858aa973659",
+              "document_digest": "07302bd19189fec41c954be27b568b1ec68e3eb38e8ad0bb1502e9557bbe0f2d",
+              "id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+              "name": "PaymentRequested",
+              "schema_id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+              "version": "v2"
+            },
+            {
+              "contract_digest": "b07d90b1eb6aed50d6c57e6e40efd605dd48a78e6b49c5fc7a55c01bcf23d99e",
+              "document_digest": "7a9cc822154e981dfec7d8a9d04eef3b7857907fef1b2ec3132120a5357e8053",
+              "id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+              "name": "UnusedMessage",
+              "schema_id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+              "version": null
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732",
+              "source_file": "<repo>/examples/order-service/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [
+            {
+              "id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "name": "payment-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            },
+            {
+              "id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+              "name": "unused-q",
+              "namespace": "commerce",
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "service:order-service",
+              "target_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "type": "SENDS"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+              "target_id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "queue:owned:f4ab89257c232ec7ec1c2633f37e256ed4971181d896bd0a002d3586d3ae29db",
+              "target_id": "message:owned:f56e85e39299a65dad13452afaa69b863b0b09810da6014a96b38a6b52f8ca8f",
+              "type": "CARRIES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "service:order-service",
+              "target_id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+              "type": "SENDS"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+              "target_id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:bde49ebe4fc19f12fea1549011bb94c1e526e8a514e898a95b71429bdbbc0732"
+              ],
+              "source_id": "queue:owned:31f221ffb45fed4f03b03f357ec3f58163a1118459ed9f101a9d3a147d468de2",
+              "target_id": "message:owned:6d1c48d1cb35c9150256b2e5cbc134700510a1628d5b44dd30533ee9d10e643b",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "cb7b65b64de4f7142a88e4e9e9d1a9d5ea022f9f97c5dd046ce31b6f31214a5a",
+              "format": "application/json",
+              "id": "schema:owned:4dc6c7a34eb3be7dd718f76e17d1083a7193902ac80e9ac2ca8692604cf12c15",
+              "name": "PaymentRequestedPayload",
+              "version": null
+            },
+            {
+              "canonical_hash": "a2c799262a3ce3c19ef5cdd983bf3d12b43ab3c426227091b909dcb7054738c0",
+              "format": "application/json",
+              "id": "schema:owned:4b6b8ed9531aa4f754d021020fba2b36ef087b45ac37aa67b78db93772c11121",
+              "name": "UnusedMessage payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:order-service",
+              "name": "OrderService",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "bdbd1c170a0d9410a4c7ae397741552c0eda358705ee0899c39bfa07577cf9a1"
+      }
+    }
+  }
+}

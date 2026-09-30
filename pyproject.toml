@@ -85,18 +85,19 @@ source_modules = ["app.qualification"]
 forbidden_modules = [
     "neo4j", "fastapi", "starlette", "mcp", "openai",
     "app.ai", "app.analysis", "app.answer_router", "app.api", "app.architecture_intelligence",
-    "app.canonical", "app.deps", "app.graph", "app.graph_schema", "app.ingestion", "app.intent",
-    "app.main", "app.mcp", "app.provenance", "app.settings", "app.sources", "app.telemetry",
-    "app.validation", "app.version",
+    "app.canonical", "app.common", "app.deps", "app.graph", "app.graph_schema", "app.ingestion",
+    "app.intent", "app.main", "app.mcp", "app.provenance", "app.settings", "app.sources",
+    "app.telemetry", "app.validation", "app.version",
 ]
 
 [[tool.importlinter.contracts]]
 name = "Delivery adapters (REST, MCP, app wiring) sit on top: nothing below imports them"
 type = "forbidden"
 source_modules = [
-    "app.ai", "app.analysis", "app.architecture_intelligence", "app.canonical", "app.graph",
-    "app.graph_schema", "app.ingestion", "app.intent", "app.provenance", "app.qualification",
-    "app.settings", "app.sources", "app.telemetry", "app.validation", "app.version",
+    "app.ai", "app.analysis", "app.architecture_intelligence", "app.canonical", "app.common",
+    "app.graph", "app.graph_schema", "app.ingestion", "app.intent", "app.provenance",
+    "app.qualification", "app.settings", "app.sources", "app.telemetry", "app.validation",
+    "app.version",
 ]
 forbidden_modules = ["app.api", "app.mcp", "app.main", "app.deps", "app.answer_router"]
 
@@ -104,7 +105,7 @@ forbidden_modules = ["app.api", "app.mcp", "app.main", "app.deps", "app.answer_r
 name = "The LLM layer stays out of the deterministic core and MCP"
 type = "forbidden"
 source_modules = [
-    "app.analysis", "app.architecture_intelligence", "app.canonical", "app.graph",
+    "app.analysis", "app.architecture_intelligence", "app.canonical", "app.common", "app.graph",
     "app.graph_schema", "app.ingestion", "app.intent", "app.mcp", "app.provenance",
     "app.qualification", "app.settings", "app.sources", "app.telemetry", "app.validation",
     "app.version",
@@ -117,7 +118,7 @@ type = "forbidden"
 source_modules = ["app.provenance", "app.intent", "app.graph_schema", "app.version"]
 forbidden_modules = [
     "app.ai", "app.analysis", "app.answer_router", "app.api", "app.architecture_intelligence",
-    "app.canonical", "app.deps", "app.graph", "app.ingestion", "app.main", "app.mcp",
+    "app.canonical", "app.common", "app.deps", "app.graph", "app.ingestion", "app.main", "app.mcp",
     "app.qualification", "app.settings", "app.sources", "app.telemetry", "app.validation",
 ]
 
@@ -130,6 +131,24 @@ modules = ["app.provenance", "app.intent", "app.graph_schema", "app.version"]
 name = "The domain model and source contracts stay framework-free"
 type = "forbidden"
 source_modules = [
-    "app.canonical", "app.sources", "app.provenance", "app.qualification", "app.validation",
+    "app.canonical", "app.common", "app.sources", "app.provenance", "app.qualification",
+    "app.validation",
 ]
 forbidden_modules = ["neo4j", "fastapi", "starlette", "mcp", "openai"]
+
+[[tool.importlinter.contracts]]
+name = "The shared base (app.common) imports no other app package"
+type = "forbidden"
+source_modules = ["app.common"]
+forbidden_modules = [
+    "app.ai", "app.analysis", "app.answer_router", "app.api", "app.architecture_intelligence",
+    "app.canonical", "app.deps", "app.graph", "app.graph_schema", "app.ingestion", "app.intent",
+    "app.main", "app.mcp", "app.provenance", "app.qualification", "app.settings", "app.sources",
+    "app.telemetry", "app.validation", "app.version",
+]
+
+[[tool.importlinter.contracts]]
+name = "Ingestion never imports the graph layer (graph builds on ingestion, not the reverse)"
+type = "forbidden"
+source_modules = ["app.ingestion"]
+forbidden_modules = ["app.graph"]

@@ -21,11 +21,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.sources.encoding import length_delimited, sha256_hex
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
+from app.common.encoding import length_delimited, sha256_hex, utf8
 
 
 class InfrastructureEntityKind(StrEnum):
@@ -206,7 +202,7 @@ class InfrastructureContribution(BaseModel):
         length-delimited like every other identity hash in this codebase, so two different
         (entity_id, source_instance_id) pairs can never collide.
         """
-        key = length_delimited(_utf8(self.entity_id), _utf8(self.source_instance_id))
+        key = length_delimited(utf8(self.entity_id), utf8(self.source_instance_id))
         return f"urn:aip:infra-contribution:{sha256_hex(key)}"
 
 
@@ -244,6 +240,6 @@ class InfrastructureClaim(BaseModel):
         """I2 Draft 0.2 §7.2: "Claim identity is the hash of kind, subject, and object (empty for a
         unary claim)." """
         key = length_delimited(
-            _utf8(self.kind.value), _utf8(self.subject_id), _utf8(self.object_id or "")
+            utf8(self.kind.value), utf8(self.subject_id), utf8(self.object_id or "")
         )
         return f"urn:aip:infra-claim:{sha256_hex(key)}"

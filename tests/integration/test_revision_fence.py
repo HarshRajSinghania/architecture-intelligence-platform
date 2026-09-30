@@ -278,3 +278,77 @@ def test_read_stable_snapshot_from_session_passes_through_a_real_read_extra(driv
         expected_count = count_services(session)
     assert result.extra == expected_count
     assert expected_count > 0
+
+
+def test_concurrent_bumps_each_advance_the_revision_exactly_once(driver):
+    """Every committed writer must move the fence by one, or two different committed states could
+    share a revision and a stable read could not tell them apart."""
+    import threading
+
+    with driver.session(database=DATABASE) as session:
+        session.run("MATCH (n) DETACH DELETE n").consume()
+        ensure_schema(session)
+        before = read_revision(session)
+
+    workers = 16
+    barrier = threading.Barrier(workers)
+    errors: list[BaseException] = []
+
+    def run() -> None:
+        try:
+            barrier.wait()
+            with driver.session(database=DATABASE) as own:
+                own.execute_write(bump_revision)
+        except BaseException as exc:  # noqa: BLE001 - surfaced below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=run) for _ in range(workers)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=120)
+
+    with driver.session(database=DATABASE) as session:
+        assert errors == []
+        assert read_revision(session) == before + workers
+
+
+def test_concurrent_lock_then_bump_units_each_advance_the_revision_exactly_once(driver):
+    """`lock_revision` must only take the lock. If it wrote back the revision it had read before the
+    lock was granted, a waiting unit would undo the increment a committed unit had just made."""
+    import threading
+
+    from app.graph.revision_fence import lock_revision
+
+    with driver.session(database=DATABASE) as session:
+        session.run("MATCH (n) DETACH DELETE n").consume()
+        ensure_schema(session)
+        before = read_revision(session)
+
+    def unit(tx):
+        lock_revision(tx)
+        return bump_revision(tx)
+
+    workers = 12
+    barrier = threading.Barrier(workers)
+    errors: list[BaseException] = []
+    returned: list[int | None] = []
+
+    def run() -> None:
+        try:
+            barrier.wait()
+            with driver.session(database=DATABASE) as own:
+                returned.append(own.execute_write(unit))
+        except BaseException as exc:  # noqa: BLE001 - surfaced below
+            errors.append(exc)
+
+    threads = [threading.Thread(target=run) for _ in range(workers)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=120)
+
+    with driver.session(database=DATABASE) as session:
+        assert errors == []
+        assert sorted(returned) == list(range(before + 1, before + workers + 1))
+        assert read_revision(session) == before + workers

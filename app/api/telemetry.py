@@ -3,16 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import ExportTraceServiceResponse
 
 from app.deps import get_driver, get_http_correlation_buffer, get_settings
-from app.graph.repository import open_session
 from app.settings import Settings
-from app.telemetry.adapter import adapt
-from app.telemetry.aggregator import persist_observation_batch
 from app.telemetry.correlation_buffer import HttpCorrelationBuffer
-from app.telemetry.operation_resolver import fetch_operation_candidates
+from app.telemetry.ingest import ingest_trace_spans
 from app.telemetry.otlp_receiver import OtlpDecodeError, decode_export_request
-from app.telemetry.pubsub_resolver import fetch_subscription_candidates, fetch_topic_candidates
-from app.telemetry.queue_resolver import fetch_queue_candidates
-from app.telemetry.service_resolver import fetch_candidates
 
 router = APIRouter(tags=["telemetry"])
 
@@ -42,27 +36,13 @@ async def post_traces(
     except OtlpDecodeError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    database = settings.config.graph.database
-    with open_session(driver, database=database, read_only=True) as session:
-        service_candidates = fetch_candidates(session)
-        operation_candidates = fetch_operation_candidates(session)
-        queue_candidates = fetch_queue_candidates(session)
-        topic_candidates = fetch_topic_candidates(session)
-        subscription_candidates = fetch_subscription_candidates(session)
-
-    batch = adapt(
+    ingest_trace_spans(
         spans,
-        service_candidates=service_candidates,
-        operation_candidates=operation_candidates,
-        queue_candidates=queue_candidates,
-        service_aliases=settings.config.telemetry.service_aliases,
-        queue_aliases=settings.config.telemetry.queue_aliases,
+        driver=driver,
+        database=settings.config.graph.database,
+        telemetry=settings.config.telemetry,
         correlation_buffer=correlation_buffer,
-        topic_candidates=topic_candidates,
-        subscription_candidates=subscription_candidates,
-        topic_aliases=settings.config.telemetry.topic_aliases,
     )
-    persist_observation_batch(driver, database, batch)
 
     return Response(
         content=ExportTraceServiceResponse().SerializeToString(),

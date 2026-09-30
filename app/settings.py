@@ -3,9 +3,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 from app.sources.model import FilesystemSourceConfig, KubernetesSourceConfig
+
+
+class _ConfigModel(BaseModel):
+    """Base for config sections that accept both the YAML's kebab-case aliases and field names."""
+
+    model_config = {"populate_by_name": True}
 
 
 class SourcesConfig(BaseModel):
@@ -54,7 +60,7 @@ class IntentRouterConfig(BaseModel):
     deterministic_threshold: float = 0.90
 
 
-class HttpCorrelationConfig(BaseModel):
+class HttpCorrelationConfig(_ConfigModel):
     """11H R2/spec §6/§22 - the cross-batch HTTP CLIENT/SERVER correlation buffer's bounds. Must
     stay optional with safe defaults so an existing config.yaml with none of these keys still
     starts the app unchanged (spec §22)."""
@@ -63,10 +69,8 @@ class HttpCorrelationConfig(BaseModel):
     ttl_seconds: int = Field(default=60, gt=0, alias="ttl-seconds")
     max_pending_spans: int = Field(default=10000, gt=0, alias="max-pending-spans")
 
-    model_config = {"populate_by_name": True}
 
-
-class CoverageConfig(BaseModel):
+class CoverageConfig(_ConfigModel):
     """11H R7/spec §11/§22 - whether O4's NOT_OBSERVED_IN_WINDOW rows get qualified with a
     SUFFICIENT/PARTIAL/NONE/UNKNOWN coverage classification. Must stay optional with a safe
     default so an existing config.yaml with none of these keys still starts the app unchanged
@@ -75,10 +79,19 @@ class CoverageConfig(BaseModel):
 
     qualification_enabled: bool = Field(default=True, alias="qualification-enabled")
 
-    model_config = {"populate_by_name": True}
+
+class ScopedEvidenceConfig(_ConfigModel):
+    """v0.6.0 I2 decision record D1/D10 - whether accepted CALLS also produce an isolated
+    caller-Pod-scoped v2 record. Off by default: with it off the graph, the snapshot and every v0.5
+    answer are byte-identical to before, and an existing config.yaml with none of these keys starts
+    unchanged. `stream-id` names this AIP instance's live `/v1/traces` stream in the operational
+    transition report and cutover ledger."""
+
+    enabled: bool = False
+    stream_id: str = Field(default="otlp-http", min_length=1, alias="stream-id")
 
 
-class TelemetryConfig(BaseModel):
+class TelemetryConfig(_ConfigModel):
     service_aliases: dict[str, str] = Field(default_factory=dict)
     queue_aliases: dict[str, str] = Field(default_factory=dict)
     # v0.5.0 I4 spec §9: configured runtime Topic aliases {destination name: canonical Topic id},
@@ -89,8 +102,9 @@ class TelemetryConfig(BaseModel):
         default_factory=HttpCorrelationConfig, alias="http-correlation"
     )
     coverage: CoverageConfig = Field(default_factory=CoverageConfig)
-
-    model_config = {"populate_by_name": True}
+    scoped_evidence: ScopedEvidenceConfig = Field(
+        default_factory=ScopedEvidenceConfig, alias="scoped-evidence"
+    )
 
 
 class RuntimeAnalysisConfig(BaseModel):
@@ -98,7 +112,7 @@ class RuntimeAnalysisConfig(BaseModel):
     default_environment: str = "production"
 
 
-class MCPConfig(BaseModel):
+class MCPConfig(_ConfigModel):
     """v0.4.0 I2.1 - spec §15: MCP is local/trusted-network evaluation only, never production-safe
     public exposure. A request whose Origin header isn't in this list is rejected
     (`mcp.server.transport_security`) before it reaches any tool. Defaults cover local dev only -
@@ -112,10 +126,8 @@ class MCPConfig(BaseModel):
         default_factory=lambda: ["127.0.0.1:8000", "localhost:8000"], alias="allowed-hosts"
     )
 
-    model_config = {"populate_by_name": True}
 
-
-class AppConfig(BaseModel):
+class AppConfig(_ConfigModel):
     sources: SourcesConfig = Field(default_factory=SourcesConfig)
     graph: GraphConfig = Field(default_factory=GraphConfig)
     import_: ImportConfig = Field(default_factory=ImportConfig, alias="import")
@@ -125,13 +137,13 @@ class AppConfig(BaseModel):
     runtime_analysis: RuntimeAnalysisConfig = Field(default_factory=RuntimeAnalysisConfig)
     mcp: MCPConfig = Field(default_factory=MCPConfig)
 
-    model_config = {"populate_by_name": True}
-
 
 class Secrets(BaseModel):
     neo4j_user: str
     neo4j_password: str
-    openai_api_key: str | None = None
+    # SecretStr so the key never shows up in a repr/log of Settings. NEO4J credentials stay plain
+    # strings: SHA256SUMS-pinned demo scripts pass `neo4j_password` straight to the driver.
+    openai_api_key: SecretStr | None = None
 
 
 @dataclass(frozen=True)
@@ -145,6 +157,15 @@ def _require_env(name: str) -> str:
     if not value:
         raise RuntimeError(f"required environment variable {name} is not set")
     return value
+
+
+CONFIG_PATH_ENV_VAR = "CONFIG_PATH"
+DEFAULT_CONFIG_PATH = Path("config.yaml")
+
+
+def config_path_from_env() -> Path:
+    """The configured YAML path: `CONFIG_PATH` if set, else `config.yaml` in the working directory."""
+    return Path(os.environ.get(CONFIG_PATH_ENV_VAR, DEFAULT_CONFIG_PATH))
 
 
 def load_config(path: Path) -> AppConfig:
@@ -161,10 +182,11 @@ def load_config(path: Path) -> AppConfig:
 
 def load_secrets() -> Secrets:
     """Reads NEO4J_USER/NEO4J_PASSWORD/OPENAI_API_KEY from the environment (spec §17.2) - never from the repo."""
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
     return Secrets(
         neo4j_user=os.environ.get("NEO4J_USER", "neo4j"),
         neo4j_password=_require_env("NEO4J_PASSWORD"),
-        openai_api_key=os.environ.get("OPENAI_API_KEY"),
+        openai_api_key=SecretStr(openai_api_key) if openai_api_key is not None else None,
     )
 
 

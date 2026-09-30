@@ -3,7 +3,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import NewType
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.canonical.infrastructure import KubernetesEvidenceMode
 
@@ -286,11 +286,36 @@ class DiagnosticCode(StrEnum):
     SUBSCRIPTION_IDENTITY_MISSING = "SUBSCRIPTION_IDENTITY_MISSING"
 
 
+@dataclass(frozen=True)
+class SubscriptionMapping:
+    """The resolved payload of one `subscriptionMappings` entry (I4 spec §7.3)."""
+
+    topic_id: str
+    subscription_name: str
+    subscription_id: str
+
+
 class IngestionDiagnostic(BaseModel):
     code: DiagnosticCode
     message: str
     source_pointer: str | None = None
     source_instance_id: str | None = None
+
+
+class KubernetesCaptureScope(BaseModel):
+    """What a *accepted* Kubernetes envelope says about the capture it describes (v0.6.0 I2 decision
+    record D5): the namespaces it declares complete, the cluster it is bound to, its declared
+    revision and evidence mode, and its raw `capturedAt`. Carried on `SourceDescriptor` from the
+    discoverer to the importer, which persists it on the source's `SourceState` so it can be read
+    under the revision fence. Never set for a rejected envelope or a non-Kubernetes source."""
+
+    model_config = ConfigDict(frozen=True)
+
+    namespaces: tuple[str, ...]
+    cluster_uid: str
+    revision: str
+    evidence_mode: str
+    captured_at: str
 
 
 class SourceDescriptor(BaseModel):
@@ -317,6 +342,10 @@ class SourceDescriptor(BaseModel):
     adapter_identity: str
     mapping_rule_id: str
     mapping_rule_version: str
+    # v0.6.0 I2.2d: only the Kubernetes discoverer's accepted path sets this. It is in-memory
+    # plumbing from the discoverer to the importer (`model_copy` keeps it), deliberately excluded
+    # from serialization so no descriptor dump, discovery golden or report changes shape.
+    capture_scope: KubernetesCaptureScope | None = Field(default=None, exclude=True)
 
 
 @dataclass(frozen=True)

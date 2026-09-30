@@ -23,7 +23,17 @@ _READ_REVISION_QUERY = "MATCH (s:AipInternalState {id: $id}) RETURN s.revision A
 # of propagating null forever - Cypher's `null + 1` is `null`, so without this a single corrupted
 # write would permanently break the fence for every subsequent write.
 _BUMP_REVISION_QUERY = (
-    "MATCH (s:AipInternalState {id: $id}) SET s.revision = coalesce(s.revision, 0) + 1"
+    "MATCH (s:AipInternalState {id: $id}) SET s.revision = coalesce(s.revision, 0) + 1 "
+    "RETURN s.revision AS revision"
+)
+# Takes the node's exclusive write lock (held until the transaction ends) by setting and removing a
+# scratch property, which leaves the node exactly as it was. It must NOT assign `s.revision` from
+# itself: the value on the right can be read before the lock is granted, so a waiting writer would
+# write back a stale revision and undo the increment a just-committed writer made. The revision is
+# read only after the lock is held, so it is the current committed one.
+_LOCK_REVISION_QUERY = (
+    "MATCH (s:AipInternalState {id: $id}) SET s.lock_probe = true REMOVE s.lock_probe "
+    "RETURN s.revision AS revision"
 )
 
 
@@ -39,10 +49,24 @@ def ensure_revision_singleton(session: neo4j.Session) -> None:
     session.run(_ENSURE_SINGLETON_QUERY, id=_SINGLETON_ID)
 
 
-def bump_revision(tx: neo4j.ManagedTransaction) -> None:
+def bump_revision(tx: neo4j.ManagedTransaction) -> int | None:
     """MUST be called inside the same transaction as the write it fences (never a separate one),
-    so a rolled-back write can never advance the committed revision."""
-    tx.run(_BUMP_REVISION_QUERY, id=_SINGLETON_ID)
+    so a rolled-back write can never advance the committed revision.
+
+    Returns the revision this transaction commits, or None when no singleton exists (as before, a
+    missing singleton is a silent no-op here - `ensure_schema` creates it before any write path
+    runs). The bump also holds the singleton's write lock until commit, so what a caller reads
+    afterwards in the same transaction is the revision it will actually commit."""
+    record = tx.run(_BUMP_REVISION_QUERY, id=_SINGLETON_ID).single()
+    return None if record is None else record["revision"]
+
+
+def lock_revision(tx: neo4j.ManagedTransaction) -> int | None:
+    """Takes the revision singleton's write lock for the rest of the transaction WITHOUT advancing
+    the revision, and returns the current committed revision (None when no singleton exists).
+    Used where a decision must be made against state no concurrent writer can change meanwhile."""
+    record = tx.run(_LOCK_REVISION_QUERY, id=_SINGLETON_ID).single()
+    return None if record is None else record["revision"]
 
 
 def read_revision(session: neo4j.Session) -> int:

@@ -14,7 +14,7 @@ merge; different contract digests under the same explicit shared ID conflict."
 
 from typing import Any
 
-from app.sources.jcs import JSONValue, canonical_sha256_hex
+from app.common.jcs import JSONValue, canonical_sha256_hex
 
 CONTRACT_EXCLUDED_KEYS = frozenset(
     {"name", "title", "description", "summary", "example", "examples", "externalDocs", "x-version"}

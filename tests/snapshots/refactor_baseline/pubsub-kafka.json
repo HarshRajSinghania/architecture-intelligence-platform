@@ -1,0 +1,479 @@
+{
+  "commit_eligible": true,
+  "diagnostics": [
+    {
+      "code": "SUBSCRIPTION_IDENTITY_MISSING",
+      "message": "channel 'inventory': Topic subscribe operation has no explicit x-aip-subscription-name with stable broker identity and no configured Subscription mapping; subscribe-side topology omitted",
+      "source_instance_id": null,
+      "source_pointer": "/channels/inventory/subscribe"
+    }
+  ],
+  "discovery_scope_id": "urn:aip:discovery-scope:4ef32a6a44c667937854d3e6e552c461eda3e82f89da96c45315d5146d82c729",
+  "expected_prior_inventory_revision": "<not supplied>",
+  "inventory_snapshot": {
+    "adapter_identities": [
+      "asyncapi-adapter@1",
+      "kubernetes-adapter@1",
+      "manifest-adapter@1",
+      "openapi-adapter@1"
+    ],
+    "capture_time": "<scrubbed>",
+    "diagnostics": [
+      {
+        "code": "SUBSCRIPTION_IDENTITY_MISSING",
+        "message": "channel 'inventory': Topic subscribe operation has no explicit x-aip-subscription-name with stable broker identity and no configured Subscription mapping; subscribe-side topology omitted",
+        "source_instance_id": null,
+        "source_pointer": "/channels/inventory/subscribe"
+      }
+    ],
+    "discovered_source_ids": [
+      "urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+      "urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3"
+    ],
+    "discoverer_identity": "filesystem-discoverer@1",
+    "discovery_scope_id": "urn:aip:discovery-scope:4ef32a6a44c667937854d3e6e552c461eda3e82f89da96c45315d5146d82c729",
+    "inventory_capture_id": "<scrubbed>",
+    "inventory_event_id": null,
+    "inventory_revision": "<scrubbed>",
+    "mapping_rule_identities": [
+      "1",
+      "v1",
+      "v1",
+      "v1"
+    ],
+    "provider_revision": null,
+    "scope_definition_digest": "<scrubbed>",
+    "status": "COMPLETE",
+    "tombstones": []
+  },
+  "inventory_status": "COMPLETE",
+  "merged_model": {
+    "infrastructure_claims": [],
+    "infrastructure_contributions": [],
+    "infrastructure_entities": [],
+    "messages": [
+      {
+        "contract_digest": "1631e96a052889a3c481e6209e01bb59d5d46a6350d372c48db1e69ea33e71ce",
+        "document_digest": "f175365394cba14521b5287712c5b4f3711e19d3bf8b1bb65926f5e7741ce4c3",
+        "id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+        "name": "StockChanged",
+        "schema_id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "1631e96a052889a3c481e6209e01bb59d5d46a6350d372c48db1e69ea33e71ce",
+        "document_digest": "f175365394cba14521b5287712c5b4f3711e19d3bf8b1bb65926f5e7741ce4c3",
+        "id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+        "name": "StockChanged",
+        "schema_id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+        "version": "v1"
+      }
+    ],
+    "operations": [],
+    "provenance": [
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+        "source_file": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3",
+        "source_file": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      }
+    ],
+    "pubsub_declarations": [
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "kafka:cluster-a",
+        "entity_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "entity_kind": "TOPIC",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-destination-kind"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "51d067bd6c14265819dd7447a242fc52bfcd8cdb6c79bd8c79d5c99a13b8d3a6",
+        "source_instance_id": "urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+        "source_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+        "source_pointer": "/channels/inventory",
+        "source_revision": null,
+        "subscription_name": null,
+        "topic_address": "inventory",
+        "topic_id": null
+      },
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "kafka:cluster-a",
+        "entity_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "entity_kind": "TOPIC",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-destination-kind"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "f2821129281f7b0b5c1e5f80609a10f3bffdc48e0916000267d35862bc868afc",
+        "source_instance_id": "urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3",
+        "source_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+        "source_pointer": "/channels/inventory",
+        "source_revision": null,
+        "subscription_name": null,
+        "topic_address": "inventory",
+        "topic_id": null
+      }
+    ],
+    "queues": [],
+    "relations": [
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+        ],
+        "source_id": "service:warehouse",
+        "target_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "type": "PUBLISHES_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+        ],
+        "source_id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+        "target_id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+        ],
+        "source_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "target_id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3"
+        ],
+        "source_id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+        "target_id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3"
+        ],
+        "source_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "target_id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+        "type": "CARRIES"
+      }
+    ],
+    "schemas": [
+      {
+        "canonical_hash": "e36382ec6abef464816fd2d62cfb88a3995907a5e91763b95fe4cbed24380252",
+        "format": "application/json",
+        "id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+        "name": "StockChanged payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "e36382ec6abef464816fd2d62cfb88a3995907a5e91763b95fe4cbed24380252",
+        "format": "application/json",
+        "id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+        "name": "StockChanged payload",
+        "version": null
+      }
+    ],
+    "services": [
+      {
+        "id": "service:warehouse",
+        "name": "warehouse",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:stock-projector",
+        "name": "stock-projector",
+        "version": "1.0.0"
+      }
+    ],
+    "subscription_dead_letter_configurations": [],
+    "subscriptions": [],
+    "topics": [
+      {
+        "id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+        "name": "inventory",
+        "namespace": null,
+        "protocol": null
+      }
+    ]
+  },
+  "scope_definition_digest": "<scrubbed>",
+  "source_outcomes": {
+    "urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "4d1248f812678f289fa1e5ba3fdb7911d2af5c881594a79155640d2ec93b5630",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:4ef32a6a44c667937854d3e6e552c461eda3e82f89da96c45315d5146d82c729",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "1631e96a052889a3c481e6209e01bb59d5d46a6350d372c48db1e69ea33e71ce",
+              "document_digest": "f175365394cba14521b5287712c5b4f3711e19d3bf8b1bb65926f5e7741ce4c3",
+              "id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+              "name": "StockChanged",
+              "schema_id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+              "source_file": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "kafka:cluster-a",
+              "entity_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "entity_kind": "TOPIC",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-destination-kind"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "51d067bd6c14265819dd7447a242fc52bfcd8cdb6c79bd8c79d5c99a13b8d3a6",
+              "source_instance_id": "urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654",
+              "source_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/warehouse/asyncapi.yaml",
+              "source_pointer": "/channels/inventory",
+              "source_revision": null,
+              "subscription_name": null,
+              "topic_address": "inventory",
+              "topic_id": null
+            }
+          ],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+              ],
+              "source_id": "service:warehouse",
+              "target_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "type": "PUBLISHES_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+              ],
+              "source_id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+              "target_id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:48d6f53dabf186779897c470877275923890d690aeb1994f16ccd569b8c23654"
+              ],
+              "source_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "target_id": "message:owned:57cf82722e8e3cf43a2cc38432b60c0182fb227317effa1233950e077ad53a01",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "e36382ec6abef464816fd2d62cfb88a3995907a5e91763b95fe4cbed24380252",
+              "format": "application/json",
+              "id": "schema:owned:1aef918852d326a36266802cd87a676f4cda6b6ab118baf8f241d9d9e43843c6",
+              "name": "StockChanged payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:warehouse",
+              "name": "warehouse",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": [
+            {
+              "id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "name": "inventory",
+              "namespace": null,
+              "protocol": null
+            }
+          ]
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "51d067bd6c14265819dd7447a242fc52bfcd8cdb6c79bd8c79d5c99a13b8d3a6"
+      }
+    },
+    "urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "54817705bd4ef30a2c4d87d31f911a70707593769406a67a542f231c9fffb135",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:4ef32a6a44c667937854d3e6e552c461eda3e82f89da96c45315d5146d82c729",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [
+          {
+            "code": "SUBSCRIPTION_IDENTITY_MISSING",
+            "message": "channel 'inventory': Topic subscribe operation has no explicit x-aip-subscription-name with stable broker identity and no configured Subscription mapping; subscribe-side topology omitted",
+            "source_instance_id": null,
+            "source_pointer": "/channels/inventory/subscribe"
+          }
+        ],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "1631e96a052889a3c481e6209e01bb59d5d46a6350d372c48db1e69ea33e71ce",
+              "document_digest": "f175365394cba14521b5287712c5b4f3711e19d3bf8b1bb65926f5e7741ce4c3",
+              "id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+              "name": "StockChanged",
+              "schema_id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3",
+              "source_file": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "kafka:cluster-a",
+              "entity_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "entity_kind": "TOPIC",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-destination-kind"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "f2821129281f7b0b5c1e5f80609a10f3bffdc48e0916000267d35862bc868afc",
+              "source_instance_id": "urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3",
+              "source_locator": "<repo>/tests/fixtures/pubsub/kafka/declarations/stock-projector/asyncapi.yaml",
+              "source_pointer": "/channels/inventory",
+              "source_revision": null,
+              "subscription_name": null,
+              "topic_address": "inventory",
+              "topic_id": null
+            }
+          ],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3"
+              ],
+              "source_id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+              "target_id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:ecf796cc7132bfee4d0fd356cdf2023b30f1976576d455f8da6d2fd82558a2c3"
+              ],
+              "source_id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "target_id": "message:owned:ce42488a780b61fdec86f40b9aa9569544b3235a06dfd7cacdd9305fa9b96950",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "e36382ec6abef464816fd2d62cfb88a3995907a5e91763b95fe4cbed24380252",
+              "format": "application/json",
+              "id": "schema:owned:b0b4496c5dcbe3d68af365ef43c6dc7a6a220bd6b8b7c94b39caa1bd450988d9",
+              "name": "StockChanged payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:stock-projector",
+              "name": "stock-projector",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": [
+            {
+              "id": "topic:owned:23fac3eaa775a3679be6ca4caddbbecefda4c5257eac37400820e09b3d42c1df",
+              "name": "inventory",
+              "namespace": null,
+              "protocol": null
+            }
+          ]
+        },
+        "result": "ACCEPTED_WITH_LIMITATIONS",
+        "semantic_input_digest": "f2821129281f7b0b5c1e5f80609a10f3bffdc48e0916000267d35862bc868afc"
+      }
+    }
+  }
+}

@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from app.canonical.model import ArchitectureModel
-from app.sources.migration_mappings import SubscriptionMapping
 from app.sources.model import (
     NOT_SUPPLIED,
     IngestionDiagnostic,
@@ -11,6 +10,7 @@ from app.sources.model import (
     LoadedSource,
     NotSupplied,
     SourceKind,
+    SubscriptionMapping,
 )
 from app.sources.service_identity import ServiceIdentityResolution
 

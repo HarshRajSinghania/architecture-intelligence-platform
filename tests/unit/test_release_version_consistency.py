@@ -16,9 +16,9 @@ from pathlib import Path
 from typing import get_args
 from unittest.mock import Mock
 
+from app.architecture_intelligence.bootstrap import build_production_service
 from app.architecture_intelligence.contracts import PRODUCER_NAME, Producer
 from app.mcp.server import mcp_server
-from app.mcp.wiring import build_production_service
 from app.version import package_version
 from evaluation.architecture_answers.runner import _build_producer
 

@@ -89,6 +89,12 @@ class Relation(BaseModel):
     evidence_ids: list[str] = Field(default_factory=list)
 
 
+def relation_key(relation: Relation) -> str:
+    """A relation's element id and graph key: `TYPE:source_id:target_id`. The one definition -
+    canonical validation, discovery attribution and the importer all use this form."""
+    return f"{relation.type}:{relation.source_id}:{relation.target_id}"
+
+
 class ArchitectureModel(BaseModel):
     services: list[Service] = Field(default_factory=list)
     operations: list[Operation] = Field(default_factory=list)

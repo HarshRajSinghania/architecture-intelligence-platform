@@ -1,28 +1,30 @@
 from app.canonical import ids
 from app.canonical.model import ArchitectureModel, Operation, Relation, Schema, Service
-from app.ingestion._shared import (
+from app.ingestion.adapter_outcomes import (
+    composition_limitation_diagnostic,
+    declared_evidence,
+    reject_if_invalid,
+    reject_if_unsupported_dialect,
+    rejected_outcome_for_identity,
+    resolved_service_id,
+    stamp_evidence,
+)
+from app.ingestion.conflicts import upsert_schema_or_conflict
+from app.ingestion.reference_closure import (
     build_resolution_cache,
     enforce_reference_closure,
-    rejected_outcome_for_identity,
     rejected_outcome_for_reference_error,
-    resolve_and_normalize_schema,
-    resolved_service_id,
-    schema_display_name,
     semantic_input_digest_bytes,
-    upsert_schema_or_conflict,
 )
-from app.provenance.model import Provenance
+from app.ingestion.schema_normalization import resolve_and_normalize_schema, schema_display_name
 from app.sources.identity import semantic_input_digest
-from app.sources.model import DiagnosticCode, IngestionDiagnostic, IngestionResult, LoadedSource
+from app.sources.model import IngestionDiagnostic, IngestionResult, LoadedSource
 from app.sources.owner_ids import schema_owned_id
 from app.sources.pointers import encode_pointer_tokens
 from app.sources.reference_resolution import ReferenceResolutionError
 from app.sources.registry import AdapterOutcome, ServiceIdentityResolver, SharedIdentityResolver
 from app.sources.service_identity import ServiceIdentityOutcome
 from app.validation.source_validation import (
-    SourceValidationError,
-    check_supported_dialect_version,
-    find_remote_reference,
     validate_openapi_document,
 )
 
@@ -61,54 +63,14 @@ class OpenApiSourceAdapter:
         locator = loaded.descriptor.locator
         source_instance_id = loaded.descriptor.source_instance_id
 
-        try:
-            validate_openapi_document(document, source_file=locator)
-        except SourceValidationError as exc:
-            return AdapterOutcome(
-                result=IngestionResult.REJECTED_INVALID,
-                model=ArchitectureModel(),
-                diagnostics=tuple(
-                    IngestionDiagnostic(
-                        code=DiagnosticCode.DOCUMENT_PARSE_INVALID,
-                        message=message,
-                        source_pointer=locator,
-                    )
-                    for message in exc.errors
-                ),
-                semantic_input_digest=None,
+        if (rejection := reject_if_invalid(loaded, validate_openapi_document)) is not None:
+            return rejection
+        if (
+            rejection := reject_if_unsupported_dialect(
+                loaded, dialect_key="openapi", accepted_versions=ACCEPTED_OPENAPI_VERSIONS
             )
-
-        remote_ref = find_remote_reference(document)
-        if remote_ref is not None:
-            return AdapterOutcome(
-                result=IngestionResult.REJECTED_UNSUPPORTED,
-                model=ArchitectureModel(),
-                diagnostics=(
-                    IngestionDiagnostic(
-                        code=DiagnosticCode.REMOTE_REFERENCE_UNSUPPORTED,
-                        message=f"remote/non-local reference is not supported: {remote_ref}",
-                        source_pointer=locator,
-                    ),
-                ),
-                semantic_input_digest=None,
-            )
-
-        version_error = check_supported_dialect_version(
-            document, dialect_key="openapi", accepted_versions=ACCEPTED_OPENAPI_VERSIONS
-        )
-        if version_error is not None:
-            return AdapterOutcome(
-                result=IngestionResult.REJECTED_UNSUPPORTED,
-                model=ArchitectureModel(),
-                diagnostics=(
-                    IngestionDiagnostic(
-                        code=DiagnosticCode.UNSUPPORTED_DIALECT_VERSION,
-                        message=version_error,
-                        source_pointer=locator,
-                    ),
-                ),
-                semantic_input_digest=None,
-            )
+        ) is not None:
+            return rejection
 
         root_resolution = service_identity.resolve(
             source_instance_id=source_instance_id,
@@ -299,15 +261,8 @@ class OpenApiSourceAdapter:
                     for schema_id_value in response_schema_ids
                 )
 
-        evidence = Provenance(
-            id=ids.evidence_id(
-                "OPENAPI", source_instance_id, loaded.descriptor.declared_provider_revision
-            ),
-            source_type="OPENAPI",
-            source_file=locator,
-            source_revision=loaded.descriptor.declared_provider_revision,
-        )
-        relations = [r.model_copy(update={"evidence_ids": [evidence.id]}) for r in relations]
+        evidence = declared_evidence(loaded, "OPENAPI")
+        relations = stamp_evidence(relations, evidence)
 
         services = [
             Service(id=service_id, name=info.get("title", service_id), version=info.get("version"))
@@ -331,17 +286,7 @@ class OpenApiSourceAdapter:
         result = IngestionResult.ACCEPTED
         if any_uninterpreted_composition:
             result = IngestionResult.ACCEPTED_WITH_LIMITATIONS
-            diagnostics = (
-                IngestionDiagnostic(
-                    code=DiagnosticCode.SCHEMA_COMPOSITION_UNINTERPRETED,
-                    message=(
-                        "one or more schemas contain an allOf/oneOf/anyOf composition, preserved "
-                        "structurally in the canonical hash but not interpreted as an effective "
-                        "object shape"
-                    ),
-                    source_pointer=locator,
-                ),
-            )
+            diagnostics = (composition_limitation_diagnostic(locator, subject="schemas"),)
 
         return AdapterOutcome(
             result=result, model=model, diagnostics=diagnostics, semantic_input_digest=digest

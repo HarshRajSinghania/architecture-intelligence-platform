@@ -1,16 +1,12 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from app.sources.encoding import length_delimited, length_delimited_group, sha256_hex
-from app.sources.jcs import JSONValue, canonical_json_bytes, canonical_sha256_hex
+from app.common.encoding import length_delimited, length_delimited_group, sha256_hex, utf8
+from app.common.jcs import JSONValue, canonical_json_bytes, canonical_sha256_hex
 from app.sources.model import DiscoveryScopeId, SourceInstanceId, SourceKind
 
 # I1 spec §5.3: "The empty closure digest is SHA-256 of the zero-length byte string."
 EMPTY_CLOSURE_DIGEST = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
 
 
 def normalize_relative_posix_path(path: str) -> str:
@@ -44,9 +40,9 @@ def source_instance_id(
     holds by construction of this signature.
     """
     stable_source_key = length_delimited(
-        _utf8(configured_source_id),
-        _utf8(source_kind.value),
-        _utf8(normalized_root_document_path),
+        utf8(configured_source_id),
+        utf8(source_kind.value),
+        utf8(normalized_root_document_path),
     )
     return SourceInstanceId(f"urn:aip:source:{source_kind.value}:{sha256_hex(stable_source_key)}")
 
@@ -64,9 +60,9 @@ def source_revision_id(
           SourceInstanceId, mapping-rule version, semantic_input_digest))>
     """
     digest_input = length_delimited(
-        _utf8(source_instance_id),
-        _utf8(mapping_rule_version),
-        _utf8(semantic_input_digest),
+        utf8(source_instance_id),
+        utf8(mapping_rule_version),
+        utf8(semantic_input_digest),
     )
     return f"urn:aip:source-revision:{sha256_hex(digest_input)}"
 
@@ -90,8 +86,8 @@ def source_capture_id(
     if normalized_provider_revision is None:
         return source_revision_id
     digest_input = length_delimited(
-        _utf8(source_revision_id),
-        _utf8(normalized_provider_revision),
+        utf8(source_revision_id),
+        utf8(normalized_provider_revision),
     )
     return f"urn:aip:source-capture:{sha256_hex(digest_input)}"
 
@@ -112,7 +108,7 @@ def mapping_context_digest(context: JSONValue) -> str:
     identities and versions - is orchestration work for a later increment, the same scoping already
     used for `discovery_scope_id`/`scope_definition_digest` in this PR. This function owns only the
     canonicalize+hash step; the caller must pre-sort every unordered entry array in `context` with
-    `app.sources.jcs.sort_entries_by_canonical_bytes` before calling this.
+    `app.common.jcs.sort_entries_by_canonical_bytes` before calling this.
     """
     return canonical_sha256_hex(context)
 
@@ -135,7 +131,7 @@ def semantic_input_digest(
     therefore invalidates replay even when the document's own bytes are unchanged.
     """
     digest_input = length_delimited(
-        normalized_document_projection_bytes, _utf8(mapping_context_digest)
+        normalized_document_projection_bytes, utf8(mapping_context_digest)
     )
     return sha256_hex(digest_input)
 
@@ -154,12 +150,12 @@ def normalized_document_and_reference_projection_bytes(
     unchanged, so `graph_revision_advance_possible` never fires even though the referenced
     definition's canonical content changed.
     """
-    ordered = sorted(documents_by_normalized_relative_path.items(), key=lambda item: _utf8(item[0]))
+    ordered = sorted(documents_by_normalized_relative_path.items(), key=lambda item: utf8(item[0]))
     return length_delimited(
         *(
             part
             for path, document in ordered
-            for part in (_utf8(path), canonical_json_bytes(document))
+            for part in (utf8(path), canonical_json_bytes(document))
         )
     )
 
@@ -178,12 +174,12 @@ def dependency_closure_digest(entries: Sequence[ClosureEntry]) -> str:
     """
     if not entries:
         return EMPTY_CLOSURE_DIGEST
-    ordered = sorted(entries, key=lambda entry: _utf8(entry.normalized_relative_path))
+    ordered = sorted(entries, key=lambda entry: utf8(entry.normalized_relative_path))
     concatenated = length_delimited(
         *(
             part
             for entry in ordered
-            for part in (_utf8(entry.normalized_relative_path), entry.file_bytes)
+            for part in (utf8(entry.normalized_relative_path), entry.file_bytes)
         )
     )
     return sha256_hex(concatenated)
@@ -202,7 +198,7 @@ def kubernetes_source_instance_id(
     (added in slice 2b-i, alongside `KubernetesSourceDiscoverer`) - this formula stands on its own,
     exactly as §6 states it, independent of that registry wiring.
     """
-    stable_source_key = length_delimited(_utf8(configured_kubernetes_source_id), _utf8(cluster_uid))
+    stable_source_key = length_delimited(utf8(configured_kubernetes_source_id), utf8(cluster_uid))
     return SourceInstanceId(f"urn:aip:source:kubernetes:{sha256_hex(stable_source_key)}")
 
 
@@ -221,7 +217,7 @@ def kubernetes_logical_resource_id(
     none of those; the caller is responsible for passing the resource's own exact name unmodified.
     """
     logical_resource_key = length_delimited(
-        _utf8(cluster_uid), _utf8(api_group), _utf8(kind), _utf8(namespace), _utf8(name)
+        utf8(cluster_uid), utf8(api_group), utf8(kind), utf8(namespace), utf8(name)
     )
     return f"urn:aip:k8s-resource:{sha256_hex(logical_resource_key)}"
 
@@ -252,7 +248,7 @@ def discovery_scope_id(
     (SourceInventorySnapshot, tombstones) is out of scope for this PR - the identity formula itself
     is needed here because it's a required field of SourceDescriptor (§4).
     """
-    digest_input = length_delimited(_utf8(configured_scope_id), _utf8(stable_target_identity))
+    digest_input = length_delimited(utf8(configured_scope_id), utf8(stable_target_identity))
     return DiscoveryScopeId(f"urn:aip:discovery-scope:{sha256_hex(digest_input)}")
 
 
@@ -274,9 +270,9 @@ def scope_definition_digest(
     `length_delimited_group`).
     """
     digest_input = length_delimited(
-        _utf8(discovery_scope_id),
-        length_delimited_group([_utf8(root) for root in normalized_roots]),
-        length_delimited_group([_utf8(item) for item in filters]),
-        length_delimited_group([_utf8(item) for item in inclusion_rules]),
+        utf8(discovery_scope_id),
+        length_delimited_group([utf8(root) for root in normalized_roots]),
+        length_delimited_group([utf8(item) for item in filters]),
+        length_delimited_group([utf8(item) for item in inclusion_rules]),
     )
     return sha256_hex(digest_input)

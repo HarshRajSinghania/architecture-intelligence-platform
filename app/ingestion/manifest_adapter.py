@@ -1,13 +1,17 @@
-from app.canonical import ids
 from app.canonical.model import ArchitectureModel, Relation
-from app.ingestion._shared import rejected_outcome_for_identity, resolved_service_id
-from app.provenance.model import Provenance
+from app.common.jcs import canonical_json_bytes
+from app.ingestion.adapter_outcomes import (
+    declared_evidence,
+    reject_if_invalid,
+    rejected_outcome_for_identity,
+    resolved_service_id,
+    stamp_evidence,
+)
 from app.sources.identity import semantic_input_digest
-from app.sources.jcs import canonical_json_bytes
 from app.sources.model import DiagnosticCode, IngestionDiagnostic, IngestionResult, LoadedSource
 from app.sources.registry import AdapterOutcome, ServiceIdentityResolver, SharedIdentityResolver
 from app.sources.service_identity import ServiceIdentityOutcome, is_valid_service_id
-from app.validation.source_validation import SourceValidationError, validate_manifest_document
+from app.validation.source_validation import validate_manifest_document
 
 
 class ManifestSourceAdapter:
@@ -44,25 +48,10 @@ class ManifestSourceAdapter:
         # Queue of its own to look up a shared/migration-mapped id for) - shared_identity is
         # accepted for interface uniformity across every registered SourceAdapter and unused here.
         document = loaded.document
-        locator = loaded.descriptor.locator
         source_instance_id = loaded.descriptor.source_instance_id
 
-        try:
-            validate_manifest_document(document, source_file=locator)
-        except SourceValidationError as exc:
-            return AdapterOutcome(
-                result=IngestionResult.REJECTED_INVALID,
-                model=ArchitectureModel(),
-                diagnostics=tuple(
-                    IngestionDiagnostic(
-                        code=DiagnosticCode.DOCUMENT_PARSE_INVALID,
-                        message=message,
-                        source_pointer=locator,
-                    )
-                    for message in exc.errors
-                ),
-                semantic_input_digest=None,
-            )
+        if (rejection := reject_if_invalid(loaded, validate_manifest_document)) is not None:
+            return rejection
 
         root_resolution = service_identity.resolve(
             source_instance_id=source_instance_id,
@@ -147,15 +136,8 @@ class ManifestSourceAdapter:
                 Relation(type="CALLS", source_id=caller_service_id, target_id=target_operation_id)
             )
 
-        evidence = Provenance(
-            id=ids.evidence_id(
-                "MANIFEST", source_instance_id, loaded.descriptor.declared_provider_revision
-            ),
-            source_type="MANIFEST",
-            source_file=locator,
-            source_revision=loaded.descriptor.declared_provider_revision,
-        )
-        relations = [r.model_copy(update={"evidence_ids": [evidence.id]}) for r in relations]
+        evidence = declared_evidence(loaded, "MANIFEST")
+        relations = stamp_evidence(relations, evidence)
 
         model = ArchitectureModel(relations=relations, provenance=[evidence])
         digest = semantic_input_digest(

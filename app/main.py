@@ -1,13 +1,11 @@
 import logging
-import os
 from contextlib import AsyncExitStack, asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI
 from fastapi.responses import JSONResponse
 
 from app.ai.provider import OpenAIProvider
-from app.ai.semantic_query_validator import SemanticValidationError
 from app.api import (
     analysis,
     architecture_intelligence,
@@ -21,21 +19,29 @@ from app.api import (
     telemetry,
     ui,
 )
+from app.api.errors import register_exception_handlers
+from app.architecture_intelligence.bootstrap import (
+    build_production_service,
+    production_service_kwargs,
+)
 from app.deps import get_driver, get_settings
 from app.graph.repository import build_driver, open_session
 from app.mcp import wiring as mcp_wiring
 from app.mcp.app import build_mcp_app, mcp_session_manager_lifespan
-from app.settings import Settings, load_config, load_settings
+from app.settings import Settings, config_path_from_env, load_config, load_secrets
 from app.telemetry.correlation_buffer import HttpCorrelationBuffer
 from app.version import package_version
 
-CONFIG_PATH = Path(os.environ.get("CONFIG_PATH", "config.yaml"))
+CONFIG_PATH = config_path_from_env()
 logger = logging.getLogger("architecture_intelligence.health")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    settings = load_settings(CONFIG_PATH)
+    # The config `create_app` parsed once (also behind the MCP mount) - never re-read here, so the
+    # whole app runs on one snapshot of config.yaml. Secrets are read now, at startup, so that
+    # `create_app()` itself never requires NEO4J_PASSWORD.
+    settings = Settings(config=app.state.config, secrets=load_secrets())
     app.state.settings = settings
     app.state.driver = build_driver(
         settings.config.graph.uri, settings.secrets.neo4j_user, settings.secrets.neo4j_password
@@ -48,13 +54,14 @@ async def lifespan(app: FastAPI):
     # (app.deps.get_architecture_intelligence_service) share the exact same instance, not a second
     # construction - see ADR 0016 decision #1/#2 (ArchitectureIntelligenceService is the single
     # semantic owner behind both public adapters).
-    architecture_intelligence_service = mcp_wiring.build_production_service(
-        app.state.driver, **mcp_wiring.production_service_kwargs(settings.config)
+    architecture_intelligence_service = build_production_service(
+        app.state.driver, **production_service_kwargs(settings.config)
     )
     mcp_wiring.configure(architecture_intelligence_service)
     app.state.architecture_intelligence_service = architecture_intelligence_service
-    if settings.config.llm.enabled and settings.secrets.openai_api_key:
-        app.state.llm_provider = OpenAIProvider(api_key=settings.secrets.openai_api_key)
+    openai_api_key = settings.secrets.openai_api_key
+    if settings.config.llm.enabled and openai_api_key and openai_api_key.get_secret_value():
+        app.state.llm_provider = OpenAIProvider(api_key=openai_api_key.get_secret_value())
     else:
         app.state.llm_provider = None
     http_correlation = settings.config.telemetry.http_correlation
@@ -72,11 +79,15 @@ async def lifespan(app: FastAPI):
     app.state.driver.close()
 
 
-def create_app() -> FastAPI:
-    """Builds the FastAPI app without touching env vars/Neo4j - real settings/driver only load on lifespan startup."""
+def create_app(config_path: Path | None = None) -> FastAPI:
+    """Builds the FastAPI app from `config_path` (default: `CONFIG_PATH`, i.e. the `CONFIG_PATH` env
+    var or `config.yaml`), parsing it exactly once. It never opens Neo4j or reads secrets - the driver
+    and `NEO4J_PASSWORD`/`OPENAI_API_KEY` are only touched on lifespan startup."""
+    config = load_config(config_path if config_path is not None else CONFIG_PATH)
     app = FastAPI(
         title="Architecture Intelligence PoC", version=package_version(), lifespan=lifespan
     )
+    app.state.config = config
 
     app.include_router(services.router)
     app.include_router(queues.router)
@@ -91,20 +102,7 @@ def create_app() -> FastAPI:
     app.include_router(runtime.runtime_analysis_router)
     app.include_router(ui.router)
 
-    @app.exception_handler(SemanticValidationError)
-    def handle_semantic_validation_error(request: Request, exc: SemanticValidationError):
-        """Spec §5.10: structurally invalid generated Cypher (e.g. wrong relationship direction)
-        never reaches Neo4j and is reported as 422 with the violated relation's domain/range."""
-        return JSONResponse(
-            status_code=422,
-            content={
-                "code": "SEMANTIC_QUERY_INVALID",
-                "message": str(exc),
-                "relation": exc.relation,
-                "expectedSource": sorted(exc.expected_source),
-                "expectedTarget": sorted(exc.expected_target),
-            },
-        )
+    register_exception_handlers(app)
 
     @app.get("/health")
     def health() -> dict:
@@ -129,11 +127,11 @@ def create_app() -> FastAPI:
     # requests no route above already claimed - in practice exactly `POST /mcp`, which is the
     # mounted sub-app's own route path (see app.mcp.app.build_mcp_app's docstring for why mounting
     # at an outer "/mcp" prefix instead 307-redirects a bare `POST /mcp`, confirmed live).
-    # `load_config` (not `load_settings`) reads config.yaml's `mcp.allowed-origins`/`allowed-hosts`
-    # override, if any - it never calls `load_secrets()`/requires NEO4J_PASSWORD, so create_app()
-    # still stays free of any hard env-var dependency (spec §15: local/trusted-network only by
+    # config.yaml's `mcp.allowed-origins`/`allowed-hosts` override, if any, comes from the config
+    # parsed above; `load_config` never calls `load_secrets()`/requires NEO4J_PASSWORD, so
+    # create_app() stays free of any hard secret dependency (spec §15: local/trusted-network only by
     # default; a deployment overrides via config.yaml, not by patching this function).
-    mcp_config = load_config(CONFIG_PATH).mcp
+    mcp_config = config.mcp
     app.mount(
         "/",
         build_mcp_app(

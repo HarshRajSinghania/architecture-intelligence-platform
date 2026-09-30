@@ -1,5 +1,7 @@
 from datetime import UTC, datetime
 
+import pytest
+
 from app.telemetry.adapter import (
     CORRELATION_EXPIRED,
     MISSING_CALLER_IDENTITY,
@@ -1102,3 +1104,266 @@ def test_messaging_placeholder_refusal_does_not_change_http_service_resolution()
     sends_facts = [f for f in batch.facts if f.relation_type == "SENDS"]
     assert sends_facts == []
     assert [u.reason for u in batch.unresolved] == [PLACEHOLDER_SERVICE_IDENTITY]
+
+
+# --- v0.6.0 I2.1c: original CLIENT attribution carried through correlation ----------------------
+
+_K1 = "7f3c2a10-1b2d-4e5f-8a9b-0c1d2e3f4a5b"
+_P1 = "11111111-aaaa-4bbb-8ccc-000000000001"
+_K8S = {
+    "k8s_pod_uid": _P1,
+    "k8s_cluster_uid": _K1,
+    "k8s_namespace_name": "shop",
+    "k8s_deployment_name": "orders",
+}
+_SERVER_END = datetime(2026, 8, 26, 12, 0, 2, tzinfo=UTC)  # differs from the CLIENT's 12:00:01
+
+
+def _attributed_pair(client_k8s=None, *, server_k8s=None):
+    """A CLIENT/SERVER pair whose two end times differ, so the fact time is distinguishable."""
+    client, server = _client_server_pair(end_time=_SERVER_END, **(server_k8s or {}))
+    return client.model_copy(update=(_K8S if client_k8s is None else client_k8s)), server
+
+
+def _plain_pair():
+    return _attributed_pair({})
+
+
+def _strip_seed(facts):
+    return [f.model_copy(update={"scoped_seed": None}) for f in facts]
+
+
+def _seed_of(batch):
+    [fact] = [f for f in batch.facts if f.relation_type == "CALLS"]
+    return fact.scoped_seed
+
+
+def _in_batch(client, server):
+    return _correlate([client, server])
+
+
+def _server_first(client, server):
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([server], correlation_buffer=buffer)
+    return _correlate([client], correlation_buffer=buffer)
+
+
+def _client_first(client, server):
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([client], correlation_buffer=buffer)
+    return _correlate([server], correlation_buffer=buffer)
+
+
+def _client_only(client, server):
+    client = client.model_copy(
+        update={
+            "attributes": {
+                "http.request.method": "GET",
+                "http.route": "/products/{id}",
+                "peer.service": "ProductService",
+            }
+        }
+    )
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([client], correlation_buffer=buffer)
+    _expire_client(buffer, client)
+    return _correlate([], correlation_buffer=buffer)
+
+
+PAIRING_PATHS = {
+    "in-batch": _in_batch,
+    "server-first cross-batch": _server_first,
+    "client-first cross-batch": _client_first,
+    "client-only expiry": _client_only,
+}
+
+
+def test_every_pairing_path_yields_the_same_seed_for_the_same_calls():
+    seeds = {
+        name: _seed_of(path(*_attributed_pair()))
+        for name, path in PAIRING_PATHS.items()
+        if name != "client-only expiry"
+    }
+    assert all(seed is not None for seed in seeds.values())
+    assert len({seed.model_dump_json() for seed in seeds.values()}) == 1
+    seed = seeds["in-batch"]
+    assert seed.caller_pod_uid == _P1
+    assert seed.caller_cluster_uid == _K1
+    assert seed.k8s_namespace_name == "shop"
+    assert seed.k8s_deployment_name == "orders"
+    assert seed.subject_id == "service:order-service"
+    assert seed.object_id == "operation:product-service:GET:/products/{id}"
+    # The accepted fact time is the SERVER's; the CLIENT's earlier end time is not used.
+    assert seed.fact_timestamp == _SERVER_END
+
+
+def test_client_only_expiry_keeps_the_original_client_identity():
+    batch = _client_only(*_attributed_pair())
+    seed = _seed_of(batch)
+    assert seed is not None
+    assert seed.correlation_mode == "CLIENT_ONLY"
+    assert (seed.caller_pod_uid, seed.caller_cluster_uid) == (_P1, _K1)
+    assert seed.fact_timestamp == _attributed_pair()[0].end_time
+    assert batch.scoped_refusals == []
+
+
+@pytest.mark.parametrize("path", list(PAIRING_PATHS.values()), ids=list(PAIRING_PATHS))
+def test_v1_output_is_identical_with_and_without_kubernetes_attributes(path):
+    attributed = path(*_attributed_pair())
+    plain = path(*_plain_pair())
+
+    assert [f.scoped_seed is not None for f in attributed.facts] == [True]
+    assert [f.scoped_seed for f in plain.facts] == [None]
+    assert _strip_seed(attributed.facts) == _strip_seed(plain.facts)
+    assert attributed.entities == plain.entities
+    assert attributed.unresolved == plain.unresolved
+
+
+@pytest.mark.parametrize("path", list(PAIRING_PATHS.values()), ids=list(PAIRING_PATHS))
+def test_a_missing_pod_uid_refuses_the_seed_but_keeps_the_v1_fact(path):
+    client_k8s = {**_K8S, "k8s_pod_uid": None}
+    batch = path(*_attributed_pair(client_k8s))
+    plain = path(*_plain_pair())
+
+    assert len(batch.facts) == 1
+    assert batch.facts[0].scoped_seed is None
+    assert _strip_seed(batch.facts) == _strip_seed(plain.facts)
+    [refusal] = batch.scoped_refusals
+    assert refusal.reasons == ("LOCALITY_POD_UID_MISSING",)
+    assert refusal.disposition == "INSUFFICIENT_EVIDENCE"
+    assert refusal.v1_status == "unchanged"
+    assert batch.unresolved == plain.unresolved
+
+
+def test_server_resource_identity_never_stands_in_for_the_caller():
+    client, server = _attributed_pair({}, server_k8s=_K8S)
+    batch = _in_batch(client, server)
+
+    assert batch.facts[0].scoped_seed is None
+    assert [r.reasons for r in batch.scoped_refusals] == [
+        ("LOCALITY_CLUSTER_UID_MISSING", "LOCALITY_POD_UID_MISSING")
+    ]
+
+
+def test_the_client_identity_is_used_even_when_the_server_carries_another():
+    other = {"k8s_pod_uid": "22222222-bbbb-4ccc-8ddd-000000000002", "k8s_cluster_uid": "K-OTHER"}
+    client, server = _attributed_pair(server_k8s=other)
+    seed = _seed_of(_in_batch(client, server))
+
+    assert (seed.caller_pod_uid, seed.caller_cluster_uid) == (_P1, _K1)
+
+
+def test_a_pending_server_never_carries_kubernetes_identity():
+    _, server = _attributed_pair(server_k8s=_K8S)
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([server], correlation_buffer=buffer)
+
+    [(stored, _)] = buffer._pending_servers.values()
+    assert stored.k8s_pod_uid is None and stored.k8s_cluster_uid is None
+
+
+def test_a_waiting_client_keeps_only_its_own_admitted_identity():
+    client, _ = _attributed_pair()
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([client], correlation_buffer=buffer)
+
+    [(stored, _)] = buffer._pending_clients.values()
+    assert (stored.k8s_pod_uid, stored.k8s_cluster_uid) == (_P1, _K1)
+    assert stored.k8s_namespace_name == "shop"
+
+
+def test_environment_and_day_mismatches_are_ingestion_refusals_with_v1_unchanged():
+    client, server = _attributed_pair()
+    # The paired fact's environment comes from the SERVER; a different CLIENT environment must not
+    # change v1 but must refuse the seed.
+    client = client.model_copy(update={"environment": "staging"})
+    batch = _in_batch(client, server)
+
+    assert len(batch.facts) == 1 and batch.facts[0].scoped_seed is None
+    assert [r.reasons for r in batch.scoped_refusals] == [
+        ("LOCALITY_CLIENT_FACT_ENVIRONMENT_MISMATCH",)
+    ]
+    assert batch.facts[0].environment == "production"
+
+
+def test_a_cross_midnight_pair_keeps_its_v1_day_and_gets_no_seed():
+    client, server = _attributed_pair()
+    client = client.model_copy(update={"end_time": datetime(2026, 8, 27, 0, 0, 0, 100, tzinfo=UTC)})
+    server = server.model_copy(
+        update={"end_time": datetime(2026, 8, 26, 23, 59, 59, 999900, tzinfo=UTC)}
+    )
+    batch = _in_batch(client, server)
+
+    [fact] = batch.facts
+    assert fact.scoped_seed is None
+    assert fact.evidence.bucket_start == datetime(2026, 8, 26, tzinfo=UTC)
+    assert [r.reasons for r in batch.scoped_refusals] == [("LOCALITY_CLIENT_FACT_DAY_MISMATCH",)]
+    assert batch.scoped_refusals[0].bucket_utc_day == "2026-08-26"
+
+
+def test_server_only_is_recorded_as_a_refusal_and_never_a_seed():
+    _, server = _attributed_pair(server_k8s=_K8S)
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([server], correlation_buffer=buffer)
+    _expire_server(buffer, server)
+
+    batch = _correlate([], correlation_buffer=buffer)
+
+    assert batch.facts == []
+    [refusal] = batch.scoped_refusals
+    assert refusal.reasons == ("LOCALITY_SERVER_ONLY_NO_CLIENT",)
+    assert refusal.v1_status == "none"
+
+
+def test_a_size_evicted_client_is_never_localized_retroactively():
+    client_a, server_a = _attributed_pair()
+    client_b = client_a.model_copy(update={"trace_id": "c" * 32, "span_id": "d" * 16})
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=1)
+    _correlate([client_a], correlation_buffer=buffer)
+    _correlate([client_b], correlation_buffer=buffer)  # evicts client_a
+    assert buffer.evictions == 1
+
+    batch = _correlate([server_a], correlation_buffer=buffer)
+
+    assert batch.facts == []
+    assert batch.scoped_refusals == []
+
+
+def test_no_seed_is_attached_without_a_calls_fact():
+    client, server = _attributed_pair()
+    server = server.model_copy(update={"attributes": {}})  # no method/route: NO_STABLE_ROUTE
+    batch = _in_batch(client, server)
+
+    assert batch.facts == []
+    assert batch.scoped_refusals == []
+    assert [u.reason for u in batch.unresolved] == [NO_STABLE_ROUTE]
+
+
+def test_adapt_returns_the_ingestion_refusals():
+    _, server = _attributed_pair()
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    _correlate([server], correlation_buffer=buffer)
+    _expire_server(buffer, server)
+
+    batch = adapt(
+        [],
+        service_candidates=SERVICE_CANDIDATES,
+        operation_candidates=OPERATION_CANDIDATES,
+        queue_candidates=QUEUE_CANDIDATES,
+        service_aliases={},
+        queue_aliases={},
+        correlation_buffer=buffer,
+    )
+
+    assert [r.reasons for r in batch.scoped_refusals] == [("LOCALITY_SERVER_ONLY_NO_CLIENT",)]
+
+
+def test_the_seed_is_not_part_of_the_persisted_v1_evidence():
+    batch = _in_batch(*_attributed_pair())
+    [fact] = batch.facts
+
+    assert fact.scoped_seed is not None
+    assert "scoped_seed" not in fact.evidence.model_dump()
+    assert not any(
+        key.startswith(("k8s", "caller", "scoped")) for key in fact.evidence.model_dump()
+    )

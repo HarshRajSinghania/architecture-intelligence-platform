@@ -31,6 +31,9 @@ values naming which imported spec file(s) declared that fact. There is no direct
 from a relationship to Evidence - look up r.evidence_ids on the relationship, then \
 MATCH (e:Evidence) WHERE e.id IN r.evidence_ids to find the source file(s)/revision(s).
 
+Label every node variable with one of the node labels above, for example \
+(s:Service)-[:CALLS]->(o:Operation); a node without a label is rejected.
+
 Only MATCH, OPTIONAL MATCH, WHERE, WITH, RETURN, ORDER BY, and LIMIT are permitted - the \
 query must be read-only.\
 """

@@ -3,13 +3,9 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from app.sources.encoding import length_delimited, length_delimited_group, sha256_hex
+from app.common.encoding import length_delimited, length_delimited_group, sha256_hex, utf8
 from app.sources.model import DiscoveryScopeId, IngestionDiagnostic
 from app.sources.tombstones import Tombstone
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
 
 
 class InventoryStatus(StrEnum):
@@ -58,13 +54,13 @@ def _tombstone_bytes(tombstone: Tombstone) -> bytes:
     `inventory_revision`'s "ordered tombstones" hash input. Not itself a spec-named formula.
     """
     return length_delimited(
-        _utf8(tombstone.target_source_instance_id),
-        _utf8(tombstone.discovery_scope_id),
-        _utf8(tombstone.expected_prior_inventory_revision),
-        _utf8(tombstone.scope_definition_digest),
-        _utf8(tombstone.actor),
-        _utf8(tombstone.reason),
-        _utf8(tombstone.tombstone_revision),
+        utf8(tombstone.target_source_instance_id),
+        utf8(tombstone.discovery_scope_id),
+        utf8(tombstone.expected_prior_inventory_revision),
+        utf8(tombstone.scope_definition_digest),
+        utf8(tombstone.actor),
+        utf8(tombstone.reason),
+        utf8(tombstone.tombstone_revision),
     )
 
 
@@ -93,11 +89,11 @@ def inventory_revision(
     ordered_source_ids = sorted(source_instance_ids)
     ordered_tombstones = sorted(tombstones, key=_tombstone_sort_key)
     digest_input = length_delimited(
-        _utf8(discovery_scope_id),
-        _utf8(scope_definition_digest),
-        length_delimited_group([_utf8(sid) for sid in ordered_source_ids]),
+        utf8(discovery_scope_id),
+        utf8(scope_definition_digest),
+        length_delimited_group([utf8(sid) for sid in ordered_source_ids]),
         length_delimited_group([_tombstone_bytes(t) for t in ordered_tombstones]),
-        _utf8(status.value),
+        utf8(status.value),
     )
     return f"urn:aip:inventory-revision:{sha256_hex(digest_input)}"
 
@@ -122,9 +118,9 @@ def inventory_capture_id(
     provider revision.
     """
     digest_input = length_delimited(
-        _utf8(inventory_revision),
-        _utf8(normalized_provider_revision or ""),
-        _utf8(capture_time),
+        utf8(inventory_revision),
+        utf8(normalized_provider_revision or ""),
+        utf8(capture_time),
     )
     return f"urn:aip:inventory-capture:{sha256_hex(digest_input)}"
 
@@ -141,5 +137,5 @@ def inventory_event_id(*, previous_event_id: str | None, inventory_capture_id: s
     Genesis (no previous event) is encoded as an explicit empty-string placeholder field, not
     specified by the spec text.
     """
-    digest_input = length_delimited(_utf8(previous_event_id or ""), _utf8(inventory_capture_id))
+    digest_input = length_delimited(utf8(previous_event_id or ""), utf8(inventory_capture_id))
     return f"urn:aip:inventory-event:{sha256_hex(digest_input)}"

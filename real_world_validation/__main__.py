@@ -20,8 +20,11 @@ import neo4j
 import pydantic
 import yaml
 
+from app.architecture_intelligence.bootstrap import (
+    build_production_service,
+    production_service_kwargs,
+)
 from app.graph.repository import build_driver, open_session
-from app.mcp.wiring import build_production_service, production_service_kwargs
 from app.settings import load_config
 from app.sources.service_workload_mapping import load_service_workload_mapping
 from real_world_validation.capture import (

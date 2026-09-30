@@ -61,7 +61,7 @@ def test_configured_clusters_are_imported_alongside_configured_directories(tmp_p
         removed_source_instance_ids=(),
         diagnostics=(),
     )
-    with patch("app.api.import_api.import_kubernetes_source") as mock_import_kubernetes_source:
+    with patch("app.graph.import_runs.import_kubernetes_source") as mock_import_kubernetes_source:
         mock_import_kubernetes_source.return_value = stub_stats
         import_id, run_results = _run_all_configured_sources(settings, driver="fake-driver")
 
@@ -79,3 +79,28 @@ def test_configured_clusters_are_imported_alongside_configured_directories(tmp_p
             stats=stub_stats,
         )
     ]
+
+
+def test_configuration_errors_are_a_domain_error_below_the_route(tmp_path):
+    from app.graph.import_runs import ImportConfigurationError, run_all_configured_sources
+
+    sources = SourcesConfig(directories=[], migrations=[tmp_path / "missing-migrations.yaml"])
+    with pytest.raises(
+        ImportConfigurationError, match="migration mapping configuration is invalid"
+    ):
+        run_all_configured_sources(sources, driver=None, database="neo4j")
+
+    sources = SourcesConfig(directories=[], tombstones=[tmp_path / "missing-tombstones.yaml"])
+    with pytest.raises(ImportConfigurationError, match="tombstone configuration is invalid"):
+        run_all_configured_sources(sources, driver=None, database="neo4j")
+
+
+def test_a_missing_configured_tombstone_file_is_a_500_with_the_same_detail(tmp_path):
+    config = AppConfig(
+        sources=SourcesConfig(directories=[], tombstones=[tmp_path / "missing-tombstones.yaml"])
+    )
+    settings = Settings(config=config, secrets=Secrets(neo4j_user="neo4j", neo4j_password="test"))
+    with pytest.raises(HTTPException) as exc_info:
+        _run_all_configured_sources(settings, driver=None)
+    assert exc_info.value.status_code == 500
+    assert exc_info.value.detail.startswith("tombstone configuration is invalid: [")

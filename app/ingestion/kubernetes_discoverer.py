@@ -9,6 +9,7 @@ from app.sources.model import (
     DiagnosticCode,
     IngestionDiagnostic,
     IngestionResult,
+    KubernetesCaptureScope,
     KubernetesSourceConfig,
     LoadedSource,
     SourceDescriptor,
@@ -189,6 +190,14 @@ class KubernetesSourceDiscoverer:
             discovery_scope_id=scope_id,
             scope_definition_digest=accepted_scope_digest,
             declared_provider_revision=envelope.metadata.revision,
+            # v0.6.0 I2.2d (decision record D5): only this fully-accepted path carries the capture.
+            capture_scope=KubernetesCaptureScope(
+                namespaces=tuple(sorted(envelope.scope.namespaces)),
+                cluster_uid=envelope.source.cluster_uid,
+                revision=envelope.metadata.revision,
+                evidence_mode=str(envelope.source.mode),
+                captured_at=envelope.metadata.captured_at,
+            ),
             content_sha256=validation.envelope_content_sha256 or _EMPTY_CONTENT_SHA256,
             semantic_input_digest="",
             mapping_context_digest="",

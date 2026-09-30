@@ -29,11 +29,12 @@ Copy `.env.example` to `.env` and fill these in for local development.
 | `telemetry.service_aliases` / `queue_aliases` | `{}` — map an observed name to its declared canonical name when they differ |
 | `telemetry.http-correlation` | `enabled` (`true`), `ttl-seconds` (`60`), `max-pending-spans` (`10000`) — the cross-batch correlation buffer's bounds (11H-B) |
 | `telemetry.coverage` | `qualification-enabled` (`true`) — the O4 coverage-classification kill switch (11H-E) |
+| `telemetry.scoped-evidence` | `enabled` (`false`), `stream-id` (`otlp-http`) — v0.6.0: also persist an isolated, caller-Pod-scoped v2 record for each accepted CALLS whose original CLIENT carries `k8s.pod.uid`, `k8s.cluster.uid` and a matching environment. The record is internal (never `:Evidence`, no relationships, not in any answer or the snapshot) and off by default; with it off the graph is unchanged. `stream-id` names this instance's live trace stream in the operational transition report |
 | `runtime_analysis` | `default_window_hours` (`24`), `default_environment` (`production`) |
 
 ## Backward compatibility guarantee
 
-Every 11H-era property (`telemetry.http-correlation.*`, `telemetry.coverage.*`) is optional with a
+Every 11H-era property (`telemetry.http-correlation.*`, `telemetry.coverage.*`, and the v0.6.0 `telemetry.scoped-evidence.*`) is optional with a
 safe default — an existing `config.yaml` written before these properties existed still starts the
 app completely unchanged. This isn't just convention: `HttpCorrelationConfig` and `CoverageConfig`
 are both plain Pydantic models with `Field(default=...)` on every property, and `TelemetryConfig`

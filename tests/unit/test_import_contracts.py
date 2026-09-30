@@ -62,3 +62,9 @@ def test_leaves_are_forbidden_every_non_leaf_and_each_other():
     independence = _contract("Leaf packages don't import each other")
     assert independence["type"] == "independence"
     assert set(independence["modules"]) == LEAVES
+
+
+def test_the_shared_base_is_forbidden_every_other_app_module():
+    contract = _contract("The shared base")
+    assert contract["source_modules"] == ["app.common"]
+    assert _app_only(contract["forbidden_modules"]) == _app_modules() - {"app.common"}

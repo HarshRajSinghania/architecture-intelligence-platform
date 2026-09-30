@@ -201,3 +201,33 @@ def test_sweep_expired_reports_both_clients_and_servers():
 
     assert len(expired_clients) == 1
     assert len(expired_servers) == 1
+
+
+def test_max_pending_spans_logs_count_only_warning(caplog):
+    buffer = HttpCorrelationBuffer(ttl_seconds=3600, max_pending_spans=1)
+    first = _pending(
+        span_kind="CLIENT",
+        span_id="1" * 16,
+        trace_id="a" * 32,
+        service_name="SensitiveServiceName",
+        route="/private/path",
+    )
+    second = _pending(
+        span_kind="CLIENT",
+        span_id="2" * 16,
+        trace_id="a" * 32,
+        service_name="AnotherSensitiveService",
+        route="/another/private/path",
+    )
+
+    buffer.offer_client(first)
+    with caplog.at_level("WARNING", logger="app.telemetry.correlation_buffer"):
+        buffer.offer_client(second)
+
+    assert buffer.evictions == 1
+    assert len(buffer._pending_clients) == 1
+    assert len(caplog.records) == 1
+    assert caplog.records[0].getMessage() == "HTTP correlation buffer size eviction count=1"
+    assert "SensitiveServiceName" not in caplog.text
+    assert "AnotherSensitiveService" not in caplog.text
+    assert "/private/path" not in caplog.text

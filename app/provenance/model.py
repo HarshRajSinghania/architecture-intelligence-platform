@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # The source types a *public* evidence answer may carry. `app.architecture_intelligence.contracts`
@@ -118,4 +118,55 @@ class RuntimeIdentityObservation(Provenance):
     # I3 §9.4 - identifies the normalization rule/version that produced this record, so a later
     # rule revision can be distinguished from earlier persisted observations.
     normalization_rule_id: str = "otel-runtime-identity-observation"
+    normalization_rule_version: int = 1
+
+
+class ScopedObservedCall(BaseModel):
+    """A caller-Pod-scoped v2 observed CALLS record (v0.6.0 I1 v2 contract §§1 and 3, I2 decision
+    record D1). It represents the *same* interaction as a v1 `ObservedEvidence` bucket, isolated
+    from it: it is never `:Evidence`, never attached to a relation's `evidence_ids`, and never
+    counted in v0.5 qualification, coverage or public evidence.
+
+    The identity is the ten key fields (`id` is derived from them by
+    `app.canonical.ids.scoped_observed_call_v2_id`); everything after `caller_pod_uid` is merged,
+    order-independently, by `app.telemetry.scoped_evidence.merge_scoped_call`. No raw Resource, no
+    resolved Workload and no capture identity is stored: the Workload is resolved at query time
+    against the selected capture (I1 §9).
+
+    The optional `k8s_*` names are consistency metadata only. A name whose merged seeds disagreed is
+    set to None and listed in `conflicting_consistency_attributes` for good (an absorbing conflict).
+    Kept apart from `RuntimeIdentityObservation`, whose per-Service/Pod merge is order-dependent.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str
+
+    # The I1 v2 contract §1 identity (ten fields).
+    contract_version: int = 2
+    source_type: str = SourceType.OPENTELEMETRY
+    evidence_type: str = EvidenceType.OBSERVED
+    relation_type: str = "CALLS"
+    environment: str
+    bucket_utc_day: str
+    subject_id: str
+    object_id: str
+    caller_cluster_uid: str
+    caller_pod_uid: str
+
+    # Non-identity fields (v2 contract §3).
+    first_seen: datetime
+    last_seen: datetime
+    observation_count: int
+    correlation_mode: str
+    sample_trace_ids: list[str] = Field(default_factory=list)
+    k8s_namespace_name: str | None = None
+    k8s_pod_name: str | None = None
+    k8s_deployment_name: str | None = None
+    k8s_statefulset_name: str | None = None
+    k8s_daemonset_name: str | None = None
+    conflicting_consistency_attributes: list[str] = Field(default_factory=list)
+    key_rule_id: str = "otel-calls-scoped-evidence-v2-key"
+    key_rule_version: int = 1
+    normalization_rule_id: str = "otel-client-caller-attribution"
     normalization_rule_version: int = 1

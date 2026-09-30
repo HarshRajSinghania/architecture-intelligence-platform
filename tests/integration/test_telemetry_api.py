@@ -52,7 +52,7 @@ def session(driver):
         yield s
 
 
-def _build_app(driver):
+def _build_app(driver, *, telemetry: dict | None = None):
     app = create_app()
     app.state.driver = driver
     app.state.settings = Settings(
@@ -68,6 +68,7 @@ def _build_app(driver):
                     ]
                 },
                 "graph": {"uri": "bolt://ignored:7687", "database": DATABASE},
+                **({"telemetry": telemetry} if telemetry else {}),
             }
         ),
         secrets=Secrets(neo4j_user="neo4j", neo4j_password="ignored"),
@@ -452,3 +453,143 @@ def test_later_declaring_an_observed_only_operation_reconciles_without_duplicati
         operation_id=operation_id,
     ).single()["types"]
     assert set(evidence_types) == {"DECLARED", "OBSERVED"}
+
+
+# --- v0.6.0 I2.1c: attributed CLIENT identity must not change persisted v1 state -----------------
+
+_K1 = "7f3c2a10-1b2d-4e5f-8a9b-0c1d2e3f4a5b"
+_P1 = "11111111-aaaa-4bbb-8ccc-000000000001"
+
+
+def _attributed_client_resource_spans(*, client_service: str, method: str, route: str):
+    resource_spans = _client_resource_spans(
+        client_service=client_service, method=method, route=route
+    )
+    resource_spans.resource.attributes.extend(
+        [
+            KeyValue(key="deployment.environment.name", value=AnyValue(string_value="production")),
+            KeyValue(key="k8s.pod.uid", value=AnyValue(string_value=_P1)),
+            KeyValue(key="k8s.cluster.uid", value=AnyValue(string_value=_K1)),
+            KeyValue(key="k8s.namespace.name", value=AnyValue(string_value="shop")),
+            KeyValue(key="k8s.deployment.name", value=AnyValue(string_value="orders")),
+        ]
+    )
+    return resource_spans
+
+
+def _plain_client_resource_spans(*, client_service: str, method: str, route: str):
+    resource_spans = _client_resource_spans(
+        client_service=client_service, method=method, route=route
+    )
+    resource_spans.resource.attributes.append(
+        KeyValue(key="deployment.environment.name", value=AnyValue(string_value="production"))
+    )
+    return resource_spans
+
+
+def _post_client_then_server(client_app, *, client_spans, route: str) -> None:
+    for resource_spans in (
+        client_spans,
+        _server_resource_spans(server_service="ReviewService", method="GET", route=route),
+    ):
+        body = ExportTraceServiceRequest(resource_spans=[resource_spans]).SerializeToString()
+        response = client_app.post(
+            "/v1/traces", content=body, headers={"content-type": _CONTENT_TYPE}
+        )
+        assert response.status_code == 200
+
+
+_EVIDENCE_FOR_CALL = (
+    "MATCH (a {id: $subject_id})-[r:CALLS]->(b {id: $object_id}) "
+    "UNWIND r.evidence_ids AS eid MATCH (e:Evidence {id: eid}) RETURN properties(e) AS props"
+)
+
+
+def _calls_evidence(session, route: str) -> dict:
+    subject_id = ids.service_id("order-service")
+    object_id = ids.operation_id(ids.service_id("reviewservice"), "GET", route)
+    [record] = session.run(_EVIDENCE_FOR_CALL, subject_id=subject_id, object_id=object_id)
+    return dict(record["props"])
+
+
+def test_an_attributed_client_leaves_persisted_v1_evidence_identical_to_an_unattributed_one(
+    client_with_correlation_buffer, session
+):
+    # Two identical cross-batch calls that differ only in whether the CLIENT Resource carries
+    # Kubernetes identity (and in the route, which only changes the operation id). Their persisted
+    # v1 evidence must be equal apart from the id, and no scoped node may exist anywhere.
+    attributed_route, plain_route = "/reviews-attributed/{id}", "/reviews-plain/{id}"
+    _post_client_then_server(
+        client_with_correlation_buffer,
+        client_spans=_attributed_client_resource_spans(
+            client_service="OrderService", method="GET", route=attributed_route
+        ),
+        route=attributed_route,
+    )
+    _post_client_then_server(
+        client_with_correlation_buffer,
+        client_spans=_plain_client_resource_spans(
+            client_service="OrderService", method="GET", route=plain_route
+        ),
+        route=plain_route,
+    )
+
+    attributed = _calls_evidence(session, attributed_route)
+    plain = _calls_evidence(session, plain_route)
+    attributed.pop("id")
+    plain.pop("id")
+
+    assert attributed == plain
+    assert not any(key.startswith(("k8s", "caller", "scoped")) for key in attributed)
+
+    scoped_nodes = session.run(
+        "MATCH (n) WHERE any(l IN labels(n) WHERE l STARTS WITH 'Scoped') "
+        "OR (n.id IS NOT NULL AND n.id STARTS WITH 'evidence:otel:calls-scoped') "
+        "RETURN count(n) AS c"
+    ).single()
+    assert scoped_nodes is not None and scoped_nodes["c"] == 0
+
+
+def _post_attributed_cross_batch(app_client, *, route: str) -> None:
+    _post_client_then_server(
+        app_client,
+        client_spans=_attributed_client_resource_spans(
+            client_service="OrderService", method="GET", route=route
+        ),
+        route=route,
+    )
+
+
+def test_the_endpoint_writes_a_v2_record_only_when_scoped_evidence_is_enabled(driver, session):
+    # v0.6.0 I2.2b, end to end through POST /v1/traces: an attributed CLIENT plus its SERVER in a
+    # later POST. Disabled (the default) leaves no v2 node; enabled writes exactly one, isolated.
+    buffer = HttpCorrelationBuffer(ttl_seconds=60, max_pending_spans=10000)
+    disabled_app = _build_app(driver)
+    disabled_app.state.http_correlation_buffer = buffer
+    _post_attributed_cross_batch(TestClient(disabled_app), route="/reviews-scoped-off/{id}")
+    assert session.run("MATCH (v:ScopedObservedCallV2) RETURN count(v) AS c").single()["c"] == 0
+
+    enabled_app = _build_app(
+        driver, telemetry={"scoped-evidence": {"enabled": True, "stream-id": "test-stream"}}
+    )
+    enabled_app.state.http_correlation_buffer = HttpCorrelationBuffer(
+        ttl_seconds=60, max_pending_spans=10000
+    )
+    _post_attributed_cross_batch(TestClient(enabled_app), route="/reviews-scoped-on/{id}")
+
+    try:
+        [row] = session.run(
+            "MATCH (v:ScopedObservedCallV2) RETURN v.caller_pod_uid AS pod, "
+            "v.caller_cluster_uid AS cluster, v.k8s_namespace_name AS ns, "
+            "v.observation_count AS n, COUNT { (v)--() } AS degree"
+        )
+        assert (row["pod"], row["cluster"], row["ns"], row["n"], row["degree"]) == (
+            _P1,
+            _K1,
+            "shop",
+            1,
+            0,
+        )
+    finally:
+        # This module shares one graph, and an earlier test asserts no scoped node exists.
+        session.run("MATCH (v:ScopedObservedCallV2) DETACH DELETE v").consume()

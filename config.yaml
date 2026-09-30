@@ -36,6 +36,9 @@ architecture_intelligence:
       max-pending-spans: 10000
     coverage:
       qualification-enabled: true
+    scoped-evidence:
+      enabled: false
+      stream-id: otlp-http
   runtime_analysis:
     default_window_hours: 24
     default_environment: production

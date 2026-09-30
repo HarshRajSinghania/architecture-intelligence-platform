@@ -7,14 +7,6 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from app.graph.importer import (
-    ClaimEffectSet,
-    ImportRunStats,
-    SourceClaimEffects,
-    SourceImportStats,
-    SourceRunResult,
-    TombstoneDecision,
-)
 from app.ingestion.import_report import (
     DOCUMENT_POINTER_CODES,
     ConfiguredRun,
@@ -29,6 +21,14 @@ from app.ingestion.import_report_schema import (
     SERVICE_IMPORT_REPORT_SCHEMA_PATH,
     render_import_report_schema,
     render_service_import_report_schema,
+)
+from app.sources.import_stats import (
+    ClaimEffectSet,
+    ImportRunStats,
+    SourceClaimEffects,
+    SourceImportStats,
+    SourceRunResult,
+    TombstoneDecision,
 )
 from app.sources.inventory import InventoryStatus
 from app.sources.model import DiagnosticCode, IngestionDiagnostic, IngestionResult

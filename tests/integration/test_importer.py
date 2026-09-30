@@ -1874,6 +1874,9 @@ def _write_kubernetes_bundle(
     resources: list[dict] | None,
     expected_prior_inventory_revision: str | None,
     stable_target_identity: str | None = None,
+    revision: str | None = None,
+    captured_at: str = "2026-09-17T10:00:00Z",
+    completeness_status: str = "COMPLETE",
 ) -> KubernetesSourceConfig:
     """General-purpose bundle writer for slice 5's lifecycle scenarios: unlike
     `_write_dynamic_kubernetes_bundle` (one fixed Namespace resource) or
@@ -1899,9 +1902,9 @@ def _write_kubernetes_bundle(
         "kind": "KubernetesSourceSnapshot",
         "metadata": {
             "id": f"{source_id}-snapshot",
-            "revision": f"{source_id}-revision",
+            "revision": revision or f"{source_id}-revision",
             "producer": "aip-kubernetes-capture-agent",
-            "capturedAt": "2026-09-17T10:00:00Z",
+            "capturedAt": captured_at,
         },
         "source": {
             "configuredSourceId": source_id,
@@ -1915,7 +1918,7 @@ def _write_kubernetes_bundle(
             "resourceTypes": sorted(EXPECTED_RESOURCE_TYPES),
         },
         "completeness": {
-            "status": "COMPLETE",
+            "status": completeness_status,
             "authorityRef": f"{source_id}-authority",
             "expectedPriorInventoryRevision": expected_prior_inventory_revision,
         },

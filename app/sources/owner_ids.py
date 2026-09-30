@@ -1,10 +1,6 @@
 from collections.abc import Sequence
 
-from app.sources.encoding import length_delimited, length_delimited_group, sha256_hex
-
-
-def _utf8(text: str) -> bytes:
-    return text.encode("utf-8")
+from app.common.encoding import length_delimited, length_delimited_group, sha256_hex, utf8
 
 
 def _encode_source_pointer(document_path: str, pointer_tokens: Sequence[str]) -> bytes:
@@ -15,8 +11,8 @@ def _encode_source_pointer(document_path: str, pointer_tokens: Sequence[str]) ->
     contain '/' or '#').
     """
     return length_delimited(
-        _utf8(document_path),
-        length_delimited_group([_utf8(token) for token in pointer_tokens]),
+        utf8(document_path),
+        length_delimited_group([utf8(token) for token in pointer_tokens]),
     )
 
 
@@ -68,8 +64,8 @@ def schema_owned_id(
     default schema id = schema:owned:<sha256(schema_owner_key)>
     """
     schema_owner_key = length_delimited(
-        _utf8(canonical_service_id),
-        _utf8(source_instance_id),
+        utf8(canonical_service_id),
+        utf8(source_instance_id),
         _encode_source_pointer(normalized_definition_document_path, definition_pointer_tokens),
     )
     return f"schema:owned:{sha256_hex(schema_owner_key)}"
@@ -92,10 +88,10 @@ def message_owned_id(
     default message id = message:owned:<sha256(message_owner_key)>
     """
     message_owner_key = length_delimited(
-        _utf8(canonical_service_id),
-        _utf8(source_instance_id),
+        utf8(canonical_service_id),
+        utf8(source_instance_id),
         _encode_source_pointer(normalized_definition_document_path, definition_pointer_tokens),
-        _utf8(normalized_x_version_or_empty),
+        utf8(normalized_x_version_or_empty),
     )
     return f"message:owned:{sha256_hex(message_owner_key)}"
 
@@ -112,7 +108,7 @@ def inline_payload_schema_id(
       = schema:owned:<sha256(length-delimited(message id, normalized inline payload source pointer))>
     """
     key = length_delimited(
-        _utf8(message_id),
+        utf8(message_id),
         _encode_source_pointer(
             normalized_inline_payload_document_path, inline_payload_pointer_tokens
         ),
@@ -133,13 +129,13 @@ def queue_owned_id(
               stable broker id, normalized namespace-or-empty, exact channel address))>
 
     The caller is responsible for applying Unicode NFC normalization to the raw channel key before
-    calling this (`app.sources.encoding.unicode_nfc`) - channel-address normalization is kept out of
+    calling this (`app.common.encoding.unicode_nfc`) - channel-address normalization is kept out of
     this function so it stays a pure hash-formula function.
     """
     key = length_delimited(
-        _utf8(stable_broker_id),
-        _utf8(normalized_namespace_or_empty),
-        _utf8(exact_channel_address),
+        utf8(stable_broker_id),
+        utf8(normalized_namespace_or_empty),
+        utf8(exact_channel_address),
     )
     return f"queue:owned:{sha256_hex(key)}"
 
@@ -160,9 +156,9 @@ def topic_owned_id(
     because their inputs match. As with `queue_owned_id`, the caller applies Unicode NFC first.
     """
     key = length_delimited(
-        _utf8(stable_broker_id),
-        _utf8(normalized_namespace_or_empty),
-        _utf8(exact_topic_address),
+        utf8(stable_broker_id),
+        utf8(normalized_namespace_or_empty),
+        utf8(exact_topic_address),
     )
     return f"topic:owned:{sha256_hex(key)}"
 
@@ -185,9 +181,9 @@ def subscription_owned_id(
     There is deliberately no consumer-group input (spec §7.2). The caller applies Unicode NFC first.
     """
     key = length_delimited(
-        _utf8(stable_broker_id),
-        _utf8(normalized_namespace_or_empty),
-        _utf8(topic_id),
-        _utf8(exact_subscription_name),
+        utf8(stable_broker_id),
+        utf8(normalized_namespace_or_empty),
+        utf8(topic_id),
+        utf8(exact_subscription_name),
     )
     return f"subscription:owned:{sha256_hex(key)}"

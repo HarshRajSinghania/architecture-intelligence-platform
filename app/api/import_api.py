@@ -1,15 +1,8 @@
-import logging
-import time
-import uuid
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.deps import get_driver, get_settings
-from app.graph.importer import (
-    ImportRunStats,
-    import_all_sources,
-    import_kubernetes_source,
-)
+from app.graph import read_models
+from app.graph.import_runs import ImportConfigurationError, run_all_configured_sources
 from app.graph.repository import open_session
 from app.ingestion.import_report import (
     ConfiguredRun,
@@ -18,110 +11,18 @@ from app.ingestion.import_report import (
     build_import_report,
 )
 from app.settings import Settings
-from app.sources.migration_mappings import load_migration_mappings
-from app.sources.tombstones import load_tombstones
 
 router = APIRouter(prefix="/api/import", tags=["import"])
-logger = logging.getLogger("architecture_intelligence.import")
-
-
-def _log_run(import_id: str, run_stats: ImportRunStats, duration_ms: int) -> None:
-    for source_instance_id, stats in run_stats.per_source.items():
-        logger.info(
-            "Imported import_id=%s source=%s locator=%s result=%s nodes_written=%d "
-            "relations_written=%d nodes_expired=%d relations_expired=%d "
-            "graph_revision_advanced=%s duration_ms=%d",
-            import_id,
-            source_instance_id,
-            stats.locator,
-            stats.result,
-            stats.nodes_written,
-            stats.relations_written,
-            stats.nodes_expired,
-            stats.relations_expired,
-            stats.graph_revision_advanced,
-            duration_ms,
-        )
-    if run_stats.removed_source_instance_ids:
-        logger.info(
-            "Removed import_id=%s sources=%s",
-            import_id,
-            ",".join(run_stats.removed_source_instance_ids),
-        )
 
 
 def _run_all_configured_sources(settings: Settings, driver) -> tuple[str, list[ConfiguredRun]]:
-    # I1 spec §5.1.1: "Missing or modified migration configuration is diagnosed and MUST NOT fall
-    # back to a directory slug or name-derived identity" - loaded once per request (not once per
-    # configured source directory) since the same shared-identity index applies uniformly across
-    # every directory's own discovery run. A broken configured migration file is an operator
-    # configuration error, not a per-source data problem, so it fails the whole request loudly
-    # rather than silently importing with a partial/empty index.
-    migration_index, migration_diagnostics = load_migration_mappings(
-        settings.config.sources.migrations
-    )
-    if migration_diagnostics:
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                "migration mapping configuration is invalid: "
-                f"{[d.message for d in migration_diagnostics]}"
-            ),
+    try:
+        return run_all_configured_sources(
+            settings.config.sources, driver=driver, database=settings.config.graph.database
         )
-
-    # I2 Draft 0.2 §3 prerequisite slice's minimal operator-facing tombstone surface - loaded once
-    # per request, mirroring the migration-mapping load above; a broken configured tombstone file is
-    # an operator configuration error, not a per-source data problem.
-    tombstones, tombstone_diagnostics = load_tombstones(settings.config.sources.tombstones)
-    if tombstone_diagnostics:
-        raise HTTPException(
-            status_code=500,
-            detail=(
-                f"tombstone configuration is invalid: {[d.message for d in tombstone_diagnostics]}"
-            ),
-        )
-
-    import_id = uuid.uuid4().hex
-    run_results = []
-    for source_config in settings.config.sources.directories:
-        start = time.perf_counter()
-        run_stats = import_all_sources(
-            driver,
-            database=settings.config.graph.database,
-            source_config=source_config,
-            migration_mappings=migration_index,
-            tombstones=tombstones,
-        )
-        duration_ms = int((time.perf_counter() - start) * 1000)
-        _log_run(import_id, run_stats, duration_ms)
-        run_results.append(
-            ConfiguredRun(
-                kind="filesystem",
-                configured_source_id=source_config.id,
-                root=source_config.root,
-                stats=run_stats,
-            )
-        )
-    for cluster_config in settings.config.sources.clusters:
-        start = time.perf_counter()
-        run_stats = import_kubernetes_source(
-            driver,
-            database=settings.config.graph.database,
-            source_config=cluster_config,
-            migration_mappings=migration_index,
-            tombstones=tombstones,
-        )
-        duration_ms = int((time.perf_counter() - start) * 1000)
-        _log_run(import_id, run_stats, duration_ms)
-        run_results.append(
-            ConfiguredRun(
-                kind="kubernetes",
-                configured_source_id=cluster_config.id,
-                root=cluster_config.root,
-                stats=run_stats,
-            )
-        )
-    return import_id, run_results
+    except ImportConfigurationError as exc:
+        # A broken operator configuration fails the whole request loudly (I1 spec §5.1.1).
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @router.post("", response_model=ImportReport)
@@ -149,11 +50,7 @@ def import_one_service(
     report = build_import_report(import_id, run_results)
 
     with open_session(driver, database=settings.config.graph.database) as session:
-        record = session.run(
-            "MATCH (s:Service {id: $id}) RETURN count(s) AS c", id=service_id
-        ).single()
-        assert record is not None  # a count() aggregate always yields exactly one row
-        exists = record["c"] > 0
+        exists = read_models.service_exists(session, service_id)
     if not exists:
         raise HTTPException(status_code=404, detail=f"no known service: {service_id}")
 

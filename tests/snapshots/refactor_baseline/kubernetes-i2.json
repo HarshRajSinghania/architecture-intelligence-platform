@@ -1,0 +1,478 @@
+{
+  "commit_eligible": true,
+  "diagnostics": [],
+  "discovery_scope_id": "urn:aip:discovery-scope:62999aa63cb6447e2281575e14caa41693a8f0f4cf4d56e02607f57d2db6c08e",
+  "expected_prior_inventory_revision": null,
+  "inventory_snapshot": {
+    "adapter_identities": [
+      "asyncapi-adapter@1",
+      "kubernetes-adapter@1",
+      "manifest-adapter@1",
+      "openapi-adapter@1"
+    ],
+    "capture_time": "<scrubbed>",
+    "diagnostics": [],
+    "discovered_source_ids": [
+      "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+    ],
+    "discoverer_identity": "kubernetes-discoverer@1",
+    "discovery_scope_id": "urn:aip:discovery-scope:62999aa63cb6447e2281575e14caa41693a8f0f4cf4d56e02607f57d2db6c08e",
+    "inventory_capture_id": "<scrubbed>",
+    "inventory_event_id": null,
+    "inventory_revision": "<scrubbed>",
+    "mapping_rule_identities": [
+      "1",
+      "v1",
+      "v1",
+      "v1"
+    ],
+    "provider_revision": null,
+    "scope_definition_digest": "<scrubbed>",
+    "status": "COMPLETE",
+    "tombstones": []
+  },
+  "inventory_status": "COMPLETE",
+  "merged_model": {
+    "infrastructure_claims": [
+      {
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "kind": "WORKLOAD_EXISTS",
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "object_id": null,
+        "subject_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79"
+      },
+      {
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "kind": "WORKLOAD_OWNS_POD",
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "object_id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+        "subject_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79"
+      },
+      {
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "kind": "NETWORK_SERVICE_SELECTS_WORKLOAD",
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "object_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+        "subject_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c"
+      },
+      {
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z",
+          "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "kind": "INGRESS_ROUTES_TO_NETWORK_SERVICE",
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "object_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+        "subject_id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3"
+      }
+    ],
+    "infrastructure_contributions": [
+      {
+        "captured_at": "2026-09-15T10:00:00Z",
+        "captured_resource_uid": "ingress-uid-1",
+        "entity_id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3",
+        "evidence_mode": "CAPTURED_RESOURCE",
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "resource_semantic_digest": "5e51e6ade325eca234fb775b049fb60d0519f5304c15ca26d2fc3986823daf48",
+        "service_id_annotation": null,
+        "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+      },
+      {
+        "captured_at": "2026-09-15T10:00:00Z",
+        "captured_resource_uid": "svc-uid-1",
+        "entity_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+        "evidence_mode": "CAPTURED_RESOURCE",
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "resource_semantic_digest": "dc55d89429cc02df7f0f229a11c3b47a2db3542c75494fc023f86a085ecc7122",
+        "service_id_annotation": null,
+        "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+      },
+      {
+        "captured_at": "2026-09-15T10:00:00Z",
+        "captured_resource_uid": "deploy-uid-1",
+        "entity_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+        "evidence_mode": "CAPTURED_RESOURCE",
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "resource_semantic_digest": "677ce34b86e7463c58b497e342bb58444123bea2525fb874926ea950880ae288",
+        "service_id_annotation": null,
+        "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+      },
+      {
+        "captured_at": "2026-09-15T10:00:00Z",
+        "captured_resource_uid": "pod-uid-1",
+        "entity_id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+        "evidence_mode": "CAPTURED_RESOURCE",
+        "evidence_refs": [
+          "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z"
+        ],
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "resource_semantic_digest": "ca2c871c29b459e8f75120d1dbf167bcd735543eeae78b789879bbc5d3daff7f",
+        "service_id_annotation": null,
+        "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+      }
+    ],
+    "infrastructure_entities": [
+      {
+        "api_group": "networking.k8s.io",
+        "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+        "entity_kind": "KUBERNETES_INGRESS",
+        "id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3",
+        "name": "checkout-ingress",
+        "namespace": "checkout",
+        "ports": [],
+        "resource_kind": "Ingress",
+        "service_type": null
+      },
+      {
+        "api_group": "",
+        "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+        "entity_kind": "KUBERNETES_NETWORK_SERVICE",
+        "id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+        "name": "checkout-api",
+        "namespace": "checkout",
+        "ports": [
+          {
+            "name": null,
+            "port": 80,
+            "protocol": "TCP"
+          }
+        ],
+        "resource_kind": "Service",
+        "service_type": null
+      },
+      {
+        "api_group": "apps",
+        "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+        "entity_kind": "KUBERNETES_WORKLOAD",
+        "id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+        "name": "checkout-api",
+        "namespace": "checkout",
+        "ports": [],
+        "resource_kind": "Deployment",
+        "service_type": null
+      },
+      {
+        "api_group": "",
+        "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+        "entity_kind": "KUBERNETES_POD",
+        "id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+        "name": "checkout-api-abcde",
+        "namespace": "checkout",
+        "ports": [],
+        "resource_kind": "Pod",
+        "service_type": null
+      }
+    ],
+    "messages": [],
+    "operations": [],
+    "provenance": [
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z",
+        "source_file": "resources.yaml",
+        "source_revision": "2026-09-15T10-00-00Z",
+        "source_type": "KUBERNETES"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z",
+        "source_file": "resources.yaml",
+        "source_revision": "2026-09-15T10-00-00Z",
+        "source_type": "KUBERNETES"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+        "source_file": "resources.yaml",
+        "source_revision": "2026-09-15T10-00-00Z",
+        "source_type": "KUBERNETES"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+        "source_file": "resources.yaml",
+        "source_revision": "2026-09-15T10-00-00Z",
+        "source_type": "KUBERNETES"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z",
+        "source_file": "resources.yaml",
+        "source_revision": "2026-09-15T10-00-00Z",
+        "source_type": "KUBERNETES"
+      }
+    ],
+    "pubsub_declarations": [],
+    "queues": [],
+    "relations": [],
+    "schemas": [],
+    "services": [],
+    "subscription_dead_letter_configurations": [],
+    "subscriptions": [],
+    "topics": []
+  },
+  "scope_definition_digest": "<scrubbed>",
+  "source_outcomes": {
+    "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006": {
+      "descriptor": {
+        "adapter_identity": "kubernetes-adapter@1",
+        "content_sha256": "6477d0c46a2362fe73aedae324b7f326120c7d9ec78241b36a59e8ad97abbbe1",
+        "declared_provider_revision": "2026-09-15T10-00-00Z",
+        "declared_service_id": null,
+        "dependency_closure_digest": null,
+        "discovery_scope_id": "urn:aip:discovery-scope:62999aa63cb6447e2281575e14caa41693a8f0f4cf4d56e02607f57d2db6c08e",
+        "document_dialect_version": null,
+        "locator": "<repo>/tests/fixtures/kubernetes/i2/envelope.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "kubernetes-adapter@1",
+        "mapping_rule_version": "1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "kubernetes"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/kubernetes/i2/envelope.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [
+            {
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "kind": "WORKLOAD_EXISTS",
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "object_id": null,
+              "subject_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79"
+            },
+            {
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "kind": "WORKLOAD_OWNS_POD",
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "object_id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+              "subject_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79"
+            },
+            {
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "kind": "NETWORK_SERVICE_SELECTS_WORKLOAD",
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "object_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+              "subject_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c"
+            },
+            {
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z",
+                "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "kind": "INGRESS_ROUTES_TO_NETWORK_SERVICE",
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "object_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+              "subject_id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3"
+            }
+          ],
+          "infrastructure_contributions": [
+            {
+              "captured_at": "2026-09-15T10:00:00Z",
+              "captured_resource_uid": "ingress-uid-1",
+              "entity_id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3",
+              "evidence_mode": "CAPTURED_RESOURCE",
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "resource_semantic_digest": "5e51e6ade325eca234fb775b049fb60d0519f5304c15ca26d2fc3986823daf48",
+              "service_id_annotation": null,
+              "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+            },
+            {
+              "captured_at": "2026-09-15T10:00:00Z",
+              "captured_resource_uid": "svc-uid-1",
+              "entity_id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+              "evidence_mode": "CAPTURED_RESOURCE",
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "resource_semantic_digest": "dc55d89429cc02df7f0f229a11c3b47a2db3542c75494fc023f86a085ecc7122",
+              "service_id_annotation": null,
+              "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+            },
+            {
+              "captured_at": "2026-09-15T10:00:00Z",
+              "captured_resource_uid": "deploy-uid-1",
+              "entity_id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+              "evidence_mode": "CAPTURED_RESOURCE",
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "resource_semantic_digest": "677ce34b86e7463c58b497e342bb58444123bea2525fb874926ea950880ae288",
+              "service_id_annotation": null,
+              "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+            },
+            {
+              "captured_at": "2026-09-15T10:00:00Z",
+              "captured_resource_uid": "pod-uid-1",
+              "entity_id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+              "evidence_mode": "CAPTURED_RESOURCE",
+              "evidence_refs": [
+                "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z"
+              ],
+              "mapping_rule_id": "kubernetes-adapter@1",
+              "mapping_rule_version": "1",
+              "resource_semantic_digest": "ca2c871c29b459e8f75120d1dbf167bcd735543eeae78b789879bbc5d3daff7f",
+              "service_id_annotation": null,
+              "source_instance_id": "urn:aip:source:kubernetes:50039e5b702b8d7f37847bf9dd8630a5378c5aab9dd6be80e8da2e1f76308006"
+            }
+          ],
+          "infrastructure_entities": [
+            {
+              "api_group": "networking.k8s.io",
+              "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+              "entity_kind": "KUBERNETES_INGRESS",
+              "id": "urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3",
+              "name": "checkout-ingress",
+              "namespace": "checkout",
+              "ports": [],
+              "resource_kind": "Ingress",
+              "service_type": null
+            },
+            {
+              "api_group": "",
+              "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+              "entity_kind": "KUBERNETES_NETWORK_SERVICE",
+              "id": "urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c",
+              "name": "checkout-api",
+              "namespace": "checkout",
+              "ports": [
+                {
+                  "name": null,
+                  "port": 80,
+                  "protocol": "TCP"
+                }
+              ],
+              "resource_kind": "Service",
+              "service_type": null
+            },
+            {
+              "api_group": "apps",
+              "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+              "entity_kind": "KUBERNETES_WORKLOAD",
+              "id": "urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79",
+              "name": "checkout-api",
+              "namespace": "checkout",
+              "ports": [],
+              "resource_kind": "Deployment",
+              "service_type": null
+            },
+            {
+              "api_group": "",
+              "cluster_uid": "d3adbeef-0000-4000-8000-000000000001",
+              "entity_kind": "KUBERNETES_POD",
+              "id": "urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26",
+              "name": "checkout-api-abcde",
+              "namespace": "checkout",
+              "ports": [],
+              "resource_kind": "Pod",
+              "service_type": null
+            }
+          ],
+          "messages": [],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:kubernetes:urn:aip:k8s-resource:0260e711236b17ea3beb2154b0ddc5bb941d4f74bfe06dae534ddbdf22f9c1c3#resources.yaml:2026-09-15T10-00-00Z",
+              "source_file": "resources.yaml",
+              "source_revision": "2026-09-15T10-00-00Z",
+              "source_type": "KUBERNETES"
+            },
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:kubernetes:urn:aip:k8s-resource:336b73d872a1a68241c1b39ba6f4d39405cc1e62ec43f332597f5f4836e6489c#resources.yaml:2026-09-15T10-00-00Z",
+              "source_file": "resources.yaml",
+              "source_revision": "2026-09-15T10-00-00Z",
+              "source_type": "KUBERNETES"
+            },
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:kubernetes:urn:aip:k8s-resource:b17f8bab12a6871d876408e8eb529a34a108869990e8f26ea711cb431154bc79#resources.yaml:2026-09-15T10-00-00Z",
+              "source_file": "resources.yaml",
+              "source_revision": "2026-09-15T10-00-00Z",
+              "source_type": "KUBERNETES"
+            },
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:kubernetes:urn:aip:k8s-resource:d41b94aba4c3f72704373e1496d2949a2e242f14433028b2ae52956c04c35f26#resources.yaml:2026-09-15T10-00-00Z",
+              "source_file": "resources.yaml",
+              "source_revision": "2026-09-15T10-00-00Z",
+              "source_type": "KUBERNETES"
+            },
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:kubernetes:urn:aip:k8s-resource:e765445aa49bd01e355058ff92d1480eb636f7e5fc45043ca344760279434aa6#resources.yaml:2026-09-15T10-00-00Z",
+              "source_file": "resources.yaml",
+              "source_revision": "2026-09-15T10-00-00Z",
+              "source_type": "KUBERNETES"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [],
+          "relations": [],
+          "schemas": [],
+          "services": [],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "4df4d38f7901ca259dcd9134f1bdf3760c5e4cdbf4a509178128f4ff32a00edc"
+      }
+    }
+  }
+}

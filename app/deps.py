@@ -51,25 +51,8 @@ def get_llm_provider(request: Request) -> LLMProvider:
     return provider
 
 
-def build_question_service(request: Request) -> ArchitectureQuestionService | None:
-    """Returns None (rather than raising) when the LLM subsystem isn't configured - for callers like the UI page that want to render a friendly message instead of a 503."""
-    provider = getattr(request.app.state, "llm_provider", None)
-    if provider is None:
-        return None
-    settings = get_settings(request)
-    return ArchitectureQuestionService(
-        driver=get_driver(request),
-        database=settings.config.graph.database,
-        provider=provider,
-        max_depth=settings.config.graph.max_traversal_depth,
-        max_result_rows=settings.config.llm.max_result_rows,
-    )
-
-
-def get_question_service(
-    settings: Settings = Depends(get_settings),
-    driver: neo4j.Driver = Depends(get_driver),
-    provider: LLMProvider = Depends(get_llm_provider),
+def _question_service(
+    settings: Settings, driver: neo4j.Driver, provider: LLMProvider
 ) -> ArchitectureQuestionService:
     return ArchitectureQuestionService(
         driver=driver,
@@ -78,3 +61,19 @@ def get_question_service(
         max_depth=settings.config.graph.max_traversal_depth,
         max_result_rows=settings.config.llm.max_result_rows,
     )
+
+
+def build_question_service(request: Request) -> ArchitectureQuestionService | None:
+    """Returns None (rather than raising) when the LLM subsystem isn't configured - for callers like the UI page that want to render a friendly message instead of a 503."""
+    provider = getattr(request.app.state, "llm_provider", None)
+    if provider is None:
+        return None
+    return _question_service(get_settings(request), get_driver(request), provider)
+
+
+def get_question_service(
+    settings: Settings = Depends(get_settings),
+    driver: neo4j.Driver = Depends(get_driver),
+    provider: LLMProvider = Depends(get_llm_provider),
+) -> ArchitectureQuestionService:
+    return _question_service(settings, driver, provider)

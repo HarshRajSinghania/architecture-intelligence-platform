@@ -23,7 +23,7 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft202012Validator
 
-from app.sources.encoding import sha256_hex
+from app.common.encoding import sha256_hex
 from app.sources.kubernetes_envelope import (
     KubernetesEnvelopeLimitExceeded,
     KubernetesEnvelopeMalformedError,

@@ -1,0 +1,1259 @@
+{
+  "commit_eligible": true,
+  "diagnostics": [],
+  "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+  "expected_prior_inventory_revision": "<not supplied>",
+  "inventory_snapshot": {
+    "adapter_identities": [
+      "asyncapi-adapter@1",
+      "kubernetes-adapter@1",
+      "manifest-adapter@1",
+      "openapi-adapter@1"
+    ],
+    "capture_time": "<scrubbed>",
+    "diagnostics": [],
+    "discovered_source_ids": [
+      "urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+      "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+      "urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d",
+      "urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0",
+      "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+    ],
+    "discoverer_identity": "filesystem-discoverer@1",
+    "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+    "inventory_capture_id": "<scrubbed>",
+    "inventory_event_id": null,
+    "inventory_revision": "<scrubbed>",
+    "mapping_rule_identities": [
+      "1",
+      "v1",
+      "v1",
+      "v1"
+    ],
+    "provider_revision": null,
+    "scope_definition_digest": "<scrubbed>",
+    "status": "COMPLETE",
+    "tombstones": []
+  },
+  "inventory_status": "COMPLETE",
+  "merged_model": {
+    "infrastructure_claims": [],
+    "infrastructure_contributions": [],
+    "infrastructure_entities": [],
+    "messages": [
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+        "id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+        "name": "PaymentRequested",
+        "schema_id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+        "id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+        "name": "OrderPlaced",
+        "schema_id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+        "id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+        "name": "OrderPlaced",
+        "schema_id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+        "id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+        "name": "PaymentRequested",
+        "schema_id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+        "id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+        "name": "PaymentRequested",
+        "schema_id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+        "version": "v1"
+      },
+      {
+        "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+        "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+        "id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+        "name": "OrderPlaced",
+        "schema_id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+        "version": "v1"
+      }
+    ],
+    "operations": [],
+    "provenance": [
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+        "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+        "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d",
+        "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-b/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0",
+        "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-a/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      },
+      {
+        "evidence_type": "DECLARED",
+        "id": "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+        "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+        "source_revision": null,
+        "source_type": "ASYNCAPI"
+      }
+    ],
+    "pubsub_declarations": [
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "azure-sb:commerce",
+        "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "entity_kind": "TOPIC",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-destination-kind"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "4a164aa6024d3b1de2bf1f56f5e59419e014372ea851e4d402d1215fcb729d4a",
+        "source_instance_id": "urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+        "source_pointer": "/channels/order-events",
+        "source_revision": null,
+        "subscription_name": null,
+        "topic_address": "order-events",
+        "topic_id": null
+      },
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "azure-sb:commerce",
+        "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "entity_kind": "TOPIC",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-destination-kind"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "f57266a28d70c155216efd9f664db642504d3cc9d051d2217edbabbc2d447226",
+        "source_instance_id": "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+        "source_pointer": "/channels/order-events",
+        "source_revision": null,
+        "subscription_name": null,
+        "topic_address": "order-events",
+        "topic_id": null
+      },
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "azure-sb:commerce",
+        "entity_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+        "entity_kind": "SUBSCRIPTION",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-subscription-name"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "f57266a28d70c155216efd9f664db642504d3cc9d051d2217edbabbc2d447226",
+        "source_instance_id": "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+        "source_pointer": "/channels/order-events/subscribe",
+        "source_revision": null,
+        "subscription_name": "audit",
+        "topic_address": "order-events",
+        "topic_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92"
+      },
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "azure-sb:commerce",
+        "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "entity_kind": "TOPIC",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-destination-kind"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "cf800dfc8d2ada97e37d1278f008ec43b07d1ac1e386eea805aa0eff1ba27e5c",
+        "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+        "source_pointer": "/channels/order-events",
+        "source_revision": null,
+        "subscription_name": null,
+        "topic_address": "order-events",
+        "topic_id": null
+      },
+      {
+        "adapter_identity": "asyncapi-adapter@1",
+        "broker_id": "azure-sb:commerce",
+        "entity_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+        "entity_kind": "SUBSCRIPTION",
+        "identity_methods": [
+          "DERIVED"
+        ],
+        "kind_evidence": [
+          "x-aip-subscription-name"
+        ],
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "namespace": null,
+        "semantic_input_digest": "cf800dfc8d2ada97e37d1278f008ec43b07d1ac1e386eea805aa0eff1ba27e5c",
+        "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+        "source_pointer": "/channels/order-events/subscribe",
+        "source_revision": null,
+        "subscription_name": "billing",
+        "topic_address": "order-events",
+        "topic_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92"
+      }
+    ],
+    "queues": [
+      {
+        "id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "name": "payments",
+        "namespace": null,
+        "protocol": null,
+        "queue_type": "STANDARD"
+      }
+    ],
+    "relations": [
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "service:orders",
+        "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "type": "SENDS"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+        "target_id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "target_id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "service:orders",
+        "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "type": "PUBLISHES_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+        "target_id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+        ],
+        "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "target_id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+        ],
+        "source_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+        "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "type": "SUBSCRIPTION_OF"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+        ],
+        "source_id": "service:audit",
+        "target_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+        ],
+        "source_id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+        "target_id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+        ],
+        "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "target_id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+        ],
+        "source_id": "service:payment-worker-b",
+        "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+        ],
+        "source_id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+        "target_id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+        ],
+        "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "target_id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+        ],
+        "source_id": "service:payment-worker-a",
+        "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+        ],
+        "source_id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+        "target_id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+        ],
+        "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+        "target_id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+        "type": "CARRIES"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+        ],
+        "source_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+        "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "type": "SUBSCRIPTION_OF"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+        ],
+        "source_id": "service:billing",
+        "target_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+        "type": "RECEIVES_FROM"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+        ],
+        "source_id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+        "target_id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+        "type": "CONFORMS_TO"
+      },
+      {
+        "evidence_ids": [
+          "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+        ],
+        "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "target_id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+        "type": "CARRIES"
+      }
+    ],
+    "schemas": [
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+        "name": "PaymentRequested payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+        "name": "OrderPlaced payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+        "name": "OrderPlaced payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+        "name": "PaymentRequested payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+        "name": "PaymentRequested payload",
+        "version": null
+      },
+      {
+        "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+        "format": "application/json",
+        "id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+        "name": "OrderPlaced payload",
+        "version": null
+      }
+    ],
+    "services": [
+      {
+        "id": "service:orders",
+        "name": "orders",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:audit",
+        "name": "audit",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:payment-worker-b",
+        "name": "payment-worker-b",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:payment-worker-a",
+        "name": "payment-worker-a",
+        "version": "1.0.0"
+      },
+      {
+        "id": "service:billing",
+        "name": "billing",
+        "version": "1.0.0"
+      }
+    ],
+    "subscription_dead_letter_configurations": [
+      {
+        "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+        "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+        "source_pointer": "/channels/order-events/subscribe/x-aip-subscription-dead-letter",
+        "source_revision": null,
+        "subscription_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+        "target_kind_token": "queue",
+        "target_token": "order-events/Subscriptions/billing/$deadletterqueue"
+      }
+    ],
+    "subscriptions": [
+      {
+        "id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+        "name": "audit",
+        "namespace": null,
+        "protocol": null
+      },
+      {
+        "id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+        "name": "billing",
+        "namespace": null,
+        "protocol": null
+      }
+    ],
+    "topics": [
+      {
+        "id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+        "name": "order-events",
+        "namespace": null,
+        "protocol": null
+      }
+    ]
+  },
+  "scope_definition_digest": "<scrubbed>",
+  "source_outcomes": {
+    "urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "a6fbfbeaff10682b4ea6a0204902359e160e26336b11a1b8098626982919ace7",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+              "id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+              "name": "PaymentRequested",
+              "schema_id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+              "version": "v1"
+            },
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+              "id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+              "name": "OrderPlaced",
+              "schema_id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+              "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "azure-sb:commerce",
+              "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "entity_kind": "TOPIC",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-destination-kind"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "4a164aa6024d3b1de2bf1f56f5e59419e014372ea851e4d402d1215fcb729d4a",
+              "source_instance_id": "urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/orders/asyncapi.yaml",
+              "source_pointer": "/channels/order-events",
+              "source_revision": null,
+              "subscription_name": null,
+              "topic_address": "order-events",
+              "topic_id": null
+            }
+          ],
+          "queues": [
+            {
+              "id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "name": "payments",
+              "namespace": null,
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "service:orders",
+              "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "type": "SENDS"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+              "target_id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "target_id": "message:owned:0fb3055b23b3f55faf953a85b51d0c28bfda0818c30e993b34a1905dcbb99fd5",
+              "type": "CARRIES"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "service:orders",
+              "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "type": "PUBLISHES_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+              "target_id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:800d7de93179d3e2bf383ae937f8e5ed23410db03fee82b38052f78ba7876042"
+              ],
+              "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "target_id": "message:owned:5c455847cd584a64e0aa087374922a7bbb6773b541d5a4aa5edfc259ad4fb988",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:e7a71fc0cd9185971a8b0aa845d52db820a8511f0818638675c52c3e29e40221",
+              "name": "PaymentRequested payload",
+              "version": null
+            },
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:1041e0689a48c1ebf69204053d03f808b78c82f8cec5b14e58bbdd985d9937e1",
+              "name": "OrderPlaced payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:orders",
+              "name": "orders",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": [
+            {
+              "id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "name": "order-events",
+              "namespace": null,
+              "protocol": null
+            }
+          ]
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "4a164aa6024d3b1de2bf1f56f5e59419e014372ea851e4d402d1215fcb729d4a"
+      }
+    },
+    "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "eb20fbe877b7f2485703a6bd66f63533e26869e64fdef6be5ab121b09da8b008",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+              "id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+              "name": "OrderPlaced",
+              "schema_id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+              "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "azure-sb:commerce",
+              "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "entity_kind": "TOPIC",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-destination-kind"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "f57266a28d70c155216efd9f664db642504d3cc9d051d2217edbabbc2d447226",
+              "source_instance_id": "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+              "source_pointer": "/channels/order-events",
+              "source_revision": null,
+              "subscription_name": null,
+              "topic_address": "order-events",
+              "topic_id": null
+            },
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "azure-sb:commerce",
+              "entity_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+              "entity_kind": "SUBSCRIPTION",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-subscription-name"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "f57266a28d70c155216efd9f664db642504d3cc9d051d2217edbabbc2d447226",
+              "source_instance_id": "urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/audit/asyncapi.yaml",
+              "source_pointer": "/channels/order-events/subscribe",
+              "source_revision": null,
+              "subscription_name": "audit",
+              "topic_address": "order-events",
+              "topic_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92"
+            }
+          ],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+              ],
+              "source_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+              "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "type": "SUBSCRIPTION_OF"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+              ],
+              "source_id": "service:audit",
+              "target_id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+              ],
+              "source_id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+              "target_id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8142c9f5b46bfd99d018f518d5cf1024df276f8ae557dd4c522d17299be2f0f4"
+              ],
+              "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "target_id": "message:owned:b3bb83a2371f527b4b62977b341169dd896f63d6b6b4ff761c9ef9d67f685b3e",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:bf225b1265b14501bb1f0d15ba985e5b4dea73f3311cb37328fb8d89e8d9976a",
+              "name": "OrderPlaced payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:audit",
+              "name": "audit",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [
+            {
+              "id": "subscription:owned:8ca8b52d44b64a852d78bec2b69f74198b9f379b8a8cd66cd35075d2e25f8f76",
+              "name": "audit",
+              "namespace": null,
+              "protocol": null
+            }
+          ],
+          "topics": [
+            {
+              "id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "name": "order-events",
+              "namespace": null,
+              "protocol": null
+            }
+          ]
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "f57266a28d70c155216efd9f664db642504d3cc9d051d2217edbabbc2d447226"
+      }
+    },
+    "urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "dd8b19af053f54e861734d8bf14837a22555c9beff512a9989d4b5ac6c8658f1",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-b/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-b/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+              "id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+              "name": "PaymentRequested",
+              "schema_id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d",
+              "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-b/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [
+            {
+              "id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "name": "payments",
+              "namespace": null,
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+              ],
+              "source_id": "service:payment-worker-b",
+              "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+              ],
+              "source_id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+              "target_id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:8e633b33048428bf21a37229562e44ed7e708ab8dde8f760d6e1d58b313b9b1d"
+              ],
+              "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "target_id": "message:owned:3dca5760c8959383839a9fce42ff0f4a551d0f55d69e7071ed1141428083c8e4",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:dd727a57ce86d313973aa8a789b109764092785523dbc135c749782dff0ecf0f",
+              "name": "PaymentRequested payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:payment-worker-b",
+              "name": "payment-worker-b",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "dd0198853e5eef62c0e84b271cba7599297673952fa38c0ef9ddf1a246edb3fc"
+      }
+    },
+    "urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "1923065984317e09c77b8ca48acdd998374758ecef0322a59c4198de5fd5df2b",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-a/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-a/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "2ef25be48285da141e806c105352f554880de6fb14fc2e13d453b309278065b0",
+              "id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+              "name": "PaymentRequested",
+              "schema_id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0",
+              "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/payment-worker-a/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [],
+          "queues": [
+            {
+              "id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "name": "payments",
+              "namespace": null,
+              "protocol": null,
+              "queue_type": "STANDARD"
+            }
+          ],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+              ],
+              "source_id": "service:payment-worker-a",
+              "target_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+              ],
+              "source_id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+              "target_id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:ae1ec1902f1ebaf4c322da59c93c4ce9883352f27a50ba0994645e06fb804ec0"
+              ],
+              "source_id": "queue:owned:80fc911cee14ea23c5e87be98a8c603fcc420ba62bbfb32171b598e0aa82dad5",
+              "target_id": "message:owned:690b43d6152ab01d6bea793723984823a5046fb088470826747e820b174c91da",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:3affba966733c91bec189af12579a54a8289c914d6dd24fdc207e002f482cc6b",
+              "name": "PaymentRequested payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:payment-worker-a",
+              "name": "payment-worker-a",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [],
+          "subscriptions": [],
+          "topics": []
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "9dc61b2acc0e250e6983c156674b94b8b77975b0c92300dd713eca7c6d7867fd"
+      }
+    },
+    "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0": {
+      "descriptor": {
+        "adapter_identity": "asyncapi-adapter@1",
+        "content_sha256": "aee34c7ddea89db3b55f61d2f333fd53982ba06438a9b3b56bf0265dd59e2010",
+        "declared_provider_revision": null,
+        "declared_service_id": null,
+        "dependency_closure_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "discovery_scope_id": "urn:aip:discovery-scope:f3cda92db0d022969bafe10f4e9d6ad95cd41e232e761320f88ece91aa726da8",
+        "document_dialect_version": "2.6.0",
+        "locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+        "mapping_context_digest": "",
+        "mapping_rule_id": "asyncapi-adapter@1",
+        "mapping_rule_version": "v1",
+        "scope_definition_digest": "<scrubbed>",
+        "semantic_input_digest": "",
+        "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+        "source_inventory_snapshot_ref": null,
+        "source_kind": "filesystem"
+      },
+      "descriptor_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+      "outcome": {
+        "diagnostics": [],
+        "model": {
+          "infrastructure_claims": [],
+          "infrastructure_contributions": [],
+          "infrastructure_entities": [],
+          "messages": [
+            {
+              "contract_digest": "211506f2bb9280354fc6bc603d77533fd5f6ce0b38809169aa3a0213b3c14c90",
+              "document_digest": "0280f60f5ef252c298c64c63abaf17b22d8b064b3c6f3693c67cd09e3055739d",
+              "id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+              "name": "OrderPlaced",
+              "schema_id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+              "version": "v1"
+            }
+          ],
+          "operations": [],
+          "provenance": [
+            {
+              "evidence_type": "DECLARED",
+              "id": "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+              "source_file": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+              "source_revision": null,
+              "source_type": "ASYNCAPI"
+            }
+          ],
+          "pubsub_declarations": [
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "azure-sb:commerce",
+              "entity_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "entity_kind": "TOPIC",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-destination-kind"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "cf800dfc8d2ada97e37d1278f008ec43b07d1ac1e386eea805aa0eff1ba27e5c",
+              "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+              "source_pointer": "/channels/order-events",
+              "source_revision": null,
+              "subscription_name": null,
+              "topic_address": "order-events",
+              "topic_id": null
+            },
+            {
+              "adapter_identity": "asyncapi-adapter@1",
+              "broker_id": "azure-sb:commerce",
+              "entity_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+              "entity_kind": "SUBSCRIPTION",
+              "identity_methods": [
+                "DERIVED"
+              ],
+              "kind_evidence": [
+                "x-aip-subscription-name"
+              ],
+              "mapping_rule_id": "asyncapi-adapter@1",
+              "mapping_rule_version": "v1",
+              "namespace": null,
+              "semantic_input_digest": "cf800dfc8d2ada97e37d1278f008ec43b07d1ac1e386eea805aa0eff1ba27e5c",
+              "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+              "source_pointer": "/channels/order-events/subscribe",
+              "source_revision": null,
+              "subscription_name": "billing",
+              "topic_address": "order-events",
+              "topic_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92"
+            }
+          ],
+          "queues": [],
+          "relations": [
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+              ],
+              "source_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+              "target_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "type": "SUBSCRIPTION_OF"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+              ],
+              "source_id": "service:billing",
+              "target_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+              "type": "RECEIVES_FROM"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+              ],
+              "source_id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+              "target_id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+              "type": "CONFORMS_TO"
+            },
+            {
+              "evidence_ids": [
+                "evidence:asyncapi:urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0"
+              ],
+              "source_id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "target_id": "message:owned:44b6a2a67003bd719c6721c887a6aec91434a340c1e579d90694ee4d451f9a2f",
+              "type": "CARRIES"
+            }
+          ],
+          "schemas": [
+            {
+              "canonical_hash": "bc215a648509ca8baffcb5abf483e624d0dd80a0b2503be73743eed4c10ccd47",
+              "format": "application/json",
+              "id": "schema:owned:0a4e3565bbe8cf6f0b71c6234b34329a450b54093e111ac433be6ba7abecab08",
+              "name": "OrderPlaced payload",
+              "version": null
+            }
+          ],
+          "services": [
+            {
+              "id": "service:billing",
+              "name": "billing",
+              "version": "1.0.0"
+            }
+          ],
+          "subscription_dead_letter_configurations": [
+            {
+              "source_instance_id": "urn:aip:source:filesystem:d3ad63dfe28a0e2acf89f30c9bf3ab84bf8549a3b4f63fe52f0bf6cdaafb01a0",
+              "source_locator": "<repo>/tests/fixtures/pubsub/azure-service-bus/declarations/billing/asyncapi.yaml",
+              "source_pointer": "/channels/order-events/subscribe/x-aip-subscription-dead-letter",
+              "source_revision": null,
+              "subscription_id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+              "target_kind_token": "queue",
+              "target_token": "order-events/Subscriptions/billing/$deadletterqueue"
+            }
+          ],
+          "subscriptions": [
+            {
+              "id": "subscription:owned:f44ef243a905bfaa578bd6fc76971e9321accc761b37800adbd4a4379135866b",
+              "name": "billing",
+              "namespace": null,
+              "protocol": null
+            }
+          ],
+          "topics": [
+            {
+              "id": "topic:owned:22d1155acf0f47d76d836e44392b0195e89b384d670f790a58ac7c737aceab92",
+              "name": "order-events",
+              "namespace": null,
+              "protocol": null
+            }
+          ]
+        },
+        "result": "ACCEPTED",
+        "semantic_input_digest": "cf800dfc8d2ada97e37d1278f008ec43b07d1ac1e386eea805aa0eff1ba27e5c"
+      }
+    }
+  }
+}

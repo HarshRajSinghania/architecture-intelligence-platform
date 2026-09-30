@@ -14,8 +14,8 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 
+from app.architecture_intelligence.bootstrap import production_service_kwargs
 from app.graph_schema.registry import RELATIONS
-from app.mcp.wiring import production_service_kwargs
 from app.settings import AppConfig
 from real_world_validation import capture
 from real_world_validation.__main__ import EXIT_INVALID, EXIT_OK, main

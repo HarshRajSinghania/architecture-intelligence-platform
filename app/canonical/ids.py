@@ -1,4 +1,6 @@
 import hashlib
+import json
+from collections.abc import Iterable
 from datetime import datetime
 
 
@@ -74,3 +76,57 @@ def runtime_identity_observation_id(
         f"{service_name}|{service_namespace or ''}|{k8s_pod_uid}".encode()
     ).hexdigest()[:12]
     return f"runtime-identity:otel:{environment}:{bucket_start:%Y-%m-%d}:{identity_hash}"
+
+
+# v0.6.0 I2.2a: the I1 v2 contract §1 key constants. They are written out here, not imported, because
+# `app.canonical` sits below `app.telemetry` and `app.provenance`; a unit test asserts that this
+# module, `ScopedObservedCall` and `scoped_attribution` agree on every one of them.
+SCOPED_CALL_V2_CONTRACT_VERSION = 2
+SCOPED_CALL_V2_SOURCE_TYPE = "OPENTELEMETRY"
+SCOPED_CALL_V2_EVIDENCE_TYPE = "OBSERVED"
+SCOPED_CALL_V2_RELATION_TYPE = "CALLS"
+SCOPED_CALL_V2_ID_PREFIX = "evidence:otel:calls-scoped:v2:"
+
+
+def scoped_observed_call_v2_id(
+    *,
+    environment: str,
+    bucket_utc_day: str,
+    subject_id: str,
+    object_id: str,
+    caller_cluster_uid: str,
+    caller_pod_uid: str,
+) -> str:
+    """Deterministic id of a caller-Pod-scoped v2 observed CALLS record (I1 v2 contract §§1-2).
+
+    The identity is exactly ten fields - the four constants above plus the six arguments. Nothing
+    else is part of it: not trace or span ids, the Workload (never resolved at ingestion), the
+    namespace or names, the service version, timestamps, the count or the correlation mode.
+
+    Encoded as the same canonical JSON the snapshot fingerprint uses (sorted keys, `(",", ":")`
+    separators, no ASCII escaping, UTF-8) - deliberately NOT RFC 8785 - and hashed with the full,
+    untruncated SHA-256 (v1's `observed_evidence_id` keeps only 12 hex characters). The environment
+    and day appear only inside the hash. Argument order is irrelevant by construction.
+    """
+    key = {
+        "contract_version": SCOPED_CALL_V2_CONTRACT_VERSION,
+        "source_type": SCOPED_CALL_V2_SOURCE_TYPE,
+        "evidence_type": SCOPED_CALL_V2_EVIDENCE_TYPE,
+        "relation_type": SCOPED_CALL_V2_RELATION_TYPE,
+        "environment": environment,
+        "bucket_utc_day": bucket_utc_day,
+        "subject_id": subject_id,
+        "object_id": object_id,
+        "caller_cluster_uid": caller_cluster_uid,
+        "caller_pod_uid": caller_pod_uid,
+    }
+    canonical = json.dumps(key, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    return f"{SCOPED_CALL_V2_ID_PREFIX}{hashlib.sha256(canonical.encode('utf-8')).hexdigest()}"
+
+
+def legacy_bucket_digest(bucket_ids: Iterable[str]) -> str:
+    """SHA-256 of the sorted, newline-joined v1 evidence IDs that existed before scoped evidence was
+    first enabled (I2 decision record D8): the integrity check of the durable legacy membership
+    against its cutover ledger. Order of the input never matters."""
+    joined = "\n".join(sorted(bucket_ids))
+    return hashlib.sha256(joined.encode("utf-8")).hexdigest()

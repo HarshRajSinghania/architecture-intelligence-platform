@@ -14,6 +14,20 @@ already has declared, and persists observed facts and evidence. A malformed payl
 content-type is rejected (400/415) before any Neo4j access happens, so a bad request can never
 partially write.
 
+AIP expects the OTLP protobuf body **uncompressed**: `POST /v1/traces` does not negotiate
+`Content-Encoding`, so gzip-compressed exports are rejected during protobuf decoding. The
+Collector's `otlphttp` exporter uses gzip by default; disable compression on the AIP leg:
+
+```yaml
+exporters:
+  otlphttp/aip:
+    endpoint: http://<aip-host>:8000
+    compression: none
+```
+
+See the [runtime demo Collector configuration](../examples/runtime-demo/otel-collector-config.yaml)
+for a working example.
+
 ## Attribute allowlist
 
 Only these OTel semantic-convention attributes are ever read — nothing else is inspected, and
@@ -63,6 +77,28 @@ RECEIVES_FROM correlation. This is pure evidence capture at ingestion time: it p
 of its own, and the `:RuntimeIdentityObservation` node itself is never reachable through
 `GET /api/evidence`, `get_evidence`, or the public snapshot fingerprint (a different label than
 `:Evidence` entirely).
+
+### Scoped v2 evidence and its operational provenance (v0.6.0, off by default)
+
+With `telemetry.scoped-evidence.enabled: true`, an accepted HTTP `CALLS` whose *original CLIENT*
+carries `k8s.pod.uid`, `k8s.cluster.uid` and the accepted environment is also stored as an isolated
+caller-Pod-scoped record (`:ScopedObservedCallV2`), in the same transaction as its v1 evidence. The
+v1 evidence, the snapshot and every v0.5 answer are unchanged, and the record is never `:Evidence`,
+has no relationships, and is not reachable through any public read or the natural-language query
+path. The same transaction also maintains three kinds of bare operational node, none of which is
+architecture evidence:
+
+- `:ScopedEvidenceCutover` (one per graph) and `:ScopedEvidenceLegacyBucket` record which v1 CALLS
+  buckets already existed when scoped evidence was first enabled, and mark a bucket *mixed* once a
+  later enabled unit contributes to it. History is reported as **unknown**, never as legacy, whenever
+  this cannot be proved (no ledger, another stream, or a membership that no longer matches it).
+- `:ScopedEvidenceTransitionCounter` holds exact counts of accepted and refused interactions per
+  stream, environment, UTC day and primary refusal cause.
+
+The counters and the legacy classification are read with
+`app.telemetry.scoped_ledger.read_transition_report` (`aip-scoped-evidence-transition-report/1`); there
+is no public endpoint. Refusals are also logged after commit as bounded, sanitized samples (at most 20
+per cause per POST, plus a suppressed count) carrying only the stream, trace ID and reason codes.
 
 v0.5.0 I3's deployment reconciliation ("Path C", `app.architecture_intelligence.
 deployment_reconciliation`) reads these observations at query time — together with a real Pod's

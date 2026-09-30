@@ -3,7 +3,7 @@
 I1 spec §8.1: "Two current owners explicitly mapped to one shared Schema ID with different
 canonical hashes are REJECTED_CONFLICT." §9.1's message equivalent: "different contract digests
 under the same explicit shared ID conflict." Two independent sources' claims only become
-comparable once collected together - `app.ingestion._shared.upsert_schema_or_conflict`/
+comparable once collected together - `app.ingestion.conflicts.upsert_schema_or_conflict`/
 `upsert_message_or_conflict` catch the *within one source* case at the point of insertion (their
 model already deduped by the time it's returned); this module catches the *across sources* case,
 fed the same list of per-source models the orchestrator is about to merge, before `merge_models`'s
